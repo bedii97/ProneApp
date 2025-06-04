@@ -1,0 +1,21 @@
+{
+  "darkMode": "Dark Mode",
+  "email": "Email",
+  "homeScreen": "Home Screen",
+  "language": "Language",
+  "logoutAction": "Logout",
+  "password": "Password",
+  "settings": "Settings",
+  "wrongPassword": "Wrong Password",
+  "login": "Login",
+  "dontHaveAccount": "Don't have an account? Sign Up",
+  "register": "Register",
+  "username": "Username",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "registrationSuccessful": "Registration successful! Welcome.",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "confirmPasswordRequired": "Please confirm your password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "alreadyHaveAccount": "Already have an account? Sign In"
+}

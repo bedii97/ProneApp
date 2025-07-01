@@ -205,6 +205,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already have an account? Sign In'**
   String get alreadyHaveAccount;
+
+  /// No description provided for @createPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Post'**
+  String get createPost;
+
+  /// No description provided for @whatTypeOfPost.
+  ///
+  /// In en, this message translates to:
+  /// **'What type of post do you want to create?'**
+  String get whatTypeOfPost;
+
+  /// No description provided for @selectOneOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select one of the options below:'**
+  String get selectOneOption;
+
+  /// No description provided for @createPoll.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Poll'**
+  String get createPoll;
+
+  /// No description provided for @customizablePoll.
+  ///
+  /// In en, this message translates to:
+  /// **'Create customizable poll'**
+  String get customizablePoll;
+
+  /// No description provided for @simplePollDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from simple, multiple choice or open poll types'**
+  String get simplePollDescription;
+
+  /// No description provided for @quizTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz/Test'**
+  String get quizTest;
+
+  /// No description provided for @resultBasedQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-question result-based quiz'**
+  String get resultBasedQuiz;
+
+  /// No description provided for @quizDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple questions and result categories'**
+  String get quizDescription;
 }
 
 class _AppLocalizationsDelegate

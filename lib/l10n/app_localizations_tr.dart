@@ -61,4 +61,32 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'Zaten hesabın var mı? Giriş Yap';
+
+  @override
+  String get createPost => 'Gönderi Oluştur';
+
+  @override
+  String get whatTypeOfPost => 'Ne tür bir gönderi oluşturmak istiyorsun?';
+
+  @override
+  String get selectOneOption => 'Aşağıdaki seçeneklerden birini seç:';
+
+  @override
+  String get createPoll => 'Anket Oluştur';
+
+  @override
+  String get customizablePoll => 'Özelleştirilebilir anket oluştur';
+
+  @override
+  String get simplePollDescription =>
+      'Basit, çoklu seçim veya açık anket türlerinden birini seç';
+
+  @override
+  String get quizTest => 'Quiz/Test';
+
+  @override
+  String get resultBasedQuiz => 'Çoklu sorularla sonuç tabanlı quiz';
+
+  @override
+  String get quizDescription => 'Birden fazla soru ve sonuç kategorileri';
 }

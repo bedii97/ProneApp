@@ -6,6 +6,8 @@ import 'package:prone/feature/auth/presentation/cubits/auth_cubit.dart';
 import 'package:prone/feature/auth/presentation/cubits/auth_state.dart';
 import 'package:prone/feature/auth/presentation/screens/auth_screen.dart';
 import 'package:prone/feature/home/presentation/screens/home_screen.dart';
+import 'package:prone/feature/post/presentation/screens/create_poll_screen.dart';
+import 'package:prone/feature/post/presentation/screens/create_post_screen.dart';
 import 'package:prone/feature/settings/presentation/screens/settings_page.dart';
 
 class AppRouter {
@@ -61,16 +63,16 @@ class AppRouter {
           name: 'settings',
           builder: (context, state) => const SettingsScreen(),
         ),
-        // GoRoute(
-        //   path: createPost,
-        //   name: 'createPost',
-        //   builder: (context, state) => const CreatePostScreen(),
-        // ),
-        // GoRoute(
-        //   path: createPoll,
-        //   name: 'createPoll',
-        //   builder: (context, state) => const CreatePollScreen(),
-        // ),
+        GoRoute(
+          path: createPost,
+          name: 'createPost',
+          builder: (context, state) => const CreatePostScreen(),
+        ),
+        GoRoute(
+          path: createPoll,
+          name: 'createPoll',
+          builder: (context, state) => const CreatePollScreen(),
+        ),
         // GoRoute(
         //   path: createQuiz,
         //   name: 'createQuiz',

@@ -4,6 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:prone/core/routes/app_router.dart';
 import 'package:prone/feature/auth/data/supabase_auth_repo.dart';
 import 'package:prone/feature/auth/presentation/cubits/auth_cubit.dart';
+import 'package:prone/feature/post/data/supabase_post_repo.dart';
+import 'package:prone/feature/post/presentation/cubits/post_cubit.dart';
 import 'package:prone/feature/settings/presentation/cubits/settings_cubit.dart';
 import 'package:prone/l10n/app_localizations.dart';
 import 'package:prone/l10n/l10n.dart';
@@ -35,6 +37,7 @@ class _MyAppState extends State<MyApp> {
   //Cubits
   late final AuthCubit _authCubit;
   late final SettingsCubit _settingsCubit;
+  late final PostCubit _postCubit;
   //Router
   late final GoRouter _router;
 
@@ -43,6 +46,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _authCubit = AuthCubit(SupabaseAuthRepo())..checkAuthStatus();
     _settingsCubit = SettingsCubit();
+    _postCubit = PostCubit(SupabasePostRepo());
     _router = AppRouter.router(_authCubit);
   }
 
@@ -50,6 +54,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     _authCubit.close();
     _settingsCubit.close();
+    _postCubit.close();
     _router.dispose();
     super.dispose();
   }
@@ -60,6 +65,7 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider.value(value: _authCubit),
         BlocProvider.value(value: _settingsCubit),
+        BlocProvider.value(value: _postCubit),
       ],
       child: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {

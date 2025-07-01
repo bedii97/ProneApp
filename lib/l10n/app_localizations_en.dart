@@ -61,4 +61,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'Already have an account? Sign In';
+
+  @override
+  String get createPost => 'Create Post';
+
+  @override
+  String get whatTypeOfPost => 'What type of post do you want to create?';
+
+  @override
+  String get selectOneOption => 'Select one of the options below:';
+
+  @override
+  String get createPoll => 'Create Poll';
+
+  @override
+  String get customizablePoll => 'Create customizable poll';
+
+  @override
+  String get simplePollDescription =>
+      'Choose from simple, multiple choice or open poll types';
+
+  @override
+  String get quizTest => 'Quiz/Test';
+
+  @override
+  String get resultBasedQuiz => 'Multi-question result-based quiz';
+
+  @override
+  String get quizDescription => 'Multiple questions and result categories';
 }

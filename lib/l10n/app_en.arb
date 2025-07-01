@@ -17,5 +17,14 @@
   "passwordMinLength": "Password must be at least 6 characters",
   "confirmPasswordRequired": "Please confirm your password",
   "passwordsDoNotMatch": "Passwords do not match",
-  "alreadyHaveAccount": "Already have an account? Sign In"
+  "alreadyHaveAccount": "Already have an account? Sign In",
+  "createPost": "Create Post",
+  "whatTypeOfPost": "What type of post do you want to create?",
+  "selectOneOption": "Select one of the options below:",
+  "createPoll": "Create Poll",
+  "customizablePoll": "Create customizable poll",
+  "simplePollDescription": "Choose from simple, multiple choice or open poll types",
+  "quizTest": "Quiz/Test",
+  "resultBasedQuiz": "Multi-question result-based quiz",
+  "quizDescription": "Multiple questions and result categories"
 }

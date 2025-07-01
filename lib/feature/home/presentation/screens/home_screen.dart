@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prone/core/routes/app_router.dart';
 import 'package:prone/feature/auth/presentation/cubits/auth_cubit.dart';
 import 'package:prone/feature/settings/presentation/cubits/settings_cubit.dart';
 import 'package:prone/l10n/app_localizations.dart';
@@ -42,10 +43,14 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('Settings'),
             ),
-            Placeholder(),
-            Placeholder(),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push(AppRouter.createPost);
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

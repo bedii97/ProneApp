@@ -17,5 +17,14 @@
   "passwordMinLength": "Şifre en az 6 karakter olmalı",
   "confirmPasswordRequired": "Şifreyi onaylayın",
   "passwordsDoNotMatch": "Şifreler eşleşmiyor",
-  "alreadyHaveAccount": "Zaten hesabın var mı? Giriş Yap"
+  "alreadyHaveAccount": "Zaten hesabın var mı? Giriş Yap",
+  "createPost": "Gönderi Oluştur",
+  "whatTypeOfPost": "Ne tür bir gönderi oluşturmak istiyorsun?",
+  "selectOneOption": "Aşağıdaki seçeneklerden birini seç:",
+  "createPoll": "Anket Oluştur",
+  "customizablePoll": "Özelleştirilebilir anket oluştur",
+  "simplePollDescription": "Basit, çoklu seçim veya açık anket türlerinden birini seç",
+  "quizTest": "Quiz/Test",
+  "resultBasedQuiz": "Çoklu sorularla sonuç tabanlı quiz",
+  "quizDescription": "Birden fazla soru ve sonuç kategorileri"
 }

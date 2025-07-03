@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:prone/feature/post/domain/models/create_option_model.dart';
 import 'package:prone/feature/post/domain/models/create_poll_model.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
 import 'package:prone/feature/post/presentation/cubits/post_cubit.dart';
@@ -65,18 +64,16 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         return;
       }
 
-      final pollSettings = PollSettings(
-        allowMultipleVotes: _allowMultipleVotes,
-      );
-
       final post = CreatePollModel(
         title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty
+        body: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
         type: PostType.poll,
-        pollSettings: pollSettings,
         options: options.map((text) => CreateOptionModel(text: text)).toList(),
+        allowMultipleAnswers: _allowMultipleVotes,
+        showResultsBeforeVoting: _showResultsAfterVote,
+        allowAddingOptions: false, // UI'da henüz yok
       );
 
       context.read<PostCubit>().createPoll(post);

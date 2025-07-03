@@ -13,52 +13,57 @@ class SupabasePostRepo extends PostRepo {
   Future<PostModel> createPoll({required CreatePollModel post}) async {
     try {
       final user = _getCurrentUser();
+      post = post.copyWith(userId: user?.id);
       final postResponse = await _supabase
           .from(SupabaseConstants.POSTS_TABLE)
-          .insert({
-            'user_id': user?.id,
-            'title': post.title,
-            'description': post.description,
-            'type': post.type.name,
-            'status': post.status.name,
-            'poll_settings': post.pollSettings?.toJson(),
-          })
+          .insert(post.toPostJson())
           .select()
           .single();
       inspect(postResponse);
-      final createdPost = PostModel.fromJson(postResponse);
 
-      // Insert options
-      final optionsData = post.options
+      //Insert Options
+      final options = post.options
           .asMap()
           .entries
           .map(
             (entry) => {
-              'post_id': createdPost.id,
-              'text': entry.value.text,
-              'order': entry.key,
+              'post_id': postResponse['id'],
+              'option_text': entry.value.text,
+              'created_by_user_id': postResponse['user_id'],
             },
           )
           .toList();
+
       final optionResponse = await _supabase
-          .from(SupabaseConstants.POST_OPTIONS_TABLE)
-          .insert(optionsData)
+          .from(SupabaseConstants.POLL_OPTIONS_TABLE)
+          .insert(options)
           .select();
 
+      inspect(optionResponse);
+
+      // return PostModel(
+      //   id: createdPost.id,
+      //   userId: createdPost.userId,
+      //   title: createdPost.title,
+      //   body: createdPost.body,
+      //   type: createdPost.type,
+      //   createdAt: createdPost.createdAt,
+      //   totalVotes: createdPost.totalVotes,
+      //   userVoted: createdPost.userVoted,
+      //   userVoteOption: createdPost.userVoteOption,
+      //   // options: optionResponse
+      //   //     .map((option) => OptionModel.fromJson(option))
+      //   //     .toList(),
+      //   options: [],
+      // );
       return PostModel(
-        id: createdPost.id,
-        userId: createdPost.userId,
-        title: createdPost.title,
-        description: createdPost.description,
-        type: createdPost.type,
-        pollSettings: createdPost.pollSettings,
-        createdAt: createdPost.createdAt,
-        totalVotes: createdPost.totalVotes,
-        userVoted: createdPost.userVoted,
-        userVoteOption: createdPost.userVoteOption,
-        options: optionResponse
-            .map((option) => OptionModel.fromJson(option))
-            .toList(),
+        title: "title",
+        userId: "userId",
+        createdAt: DateTime.now(),
+        totalVotes: 0,
+        options: [],
+        userVoted: false,
+        userVoteOption: "userVoteOption",
       );
     } catch (e) {
       inspect(e);

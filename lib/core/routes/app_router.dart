@@ -8,6 +8,7 @@ import 'package:prone/feature/auth/presentation/screens/auth_screen.dart';
 import 'package:prone/feature/home/presentation/screens/home_screen.dart';
 import 'package:prone/feature/post/presentation/screens/create_poll_screen.dart';
 import 'package:prone/feature/post/presentation/screens/create_post_screen.dart';
+import 'package:prone/feature/post/presentation/screens/create_quiz_screen.dart';
 import 'package:prone/feature/settings/presentation/screens/settings_page.dart';
 
 class AppRouter {
@@ -16,10 +17,12 @@ class AppRouter {
   static const String settings = '/settings';
   static const String createPost = '/create-post';
   static const String createPoll = '/create-poll';
-  static const String createQuiz = '/create-quiz';
   static const String profile = '/profile';
   static const String pollDetail = '/poll/:id';
   static const String quizDetail = '/quiz/:id';
+  static const String createQuizScreen = '/create-quiz';
+  static const String createQuizBasicInfoScreen =
+      '/create-quiz-basic-info-screen';
 
   static GoRouter router(AuthCubit authCubit) {
     return GoRouter(
@@ -73,10 +76,15 @@ class AppRouter {
           name: 'createPoll',
           builder: (context, state) => const CreatePollScreen(),
         ),
+        GoRoute(
+          path: createQuizBasicInfoScreen,
+          name: 'createQuizScreen',
+          builder: (context, state) => const CreateQuizScreen(),
+        ),
         // GoRoute(
-        //   path: createQuiz,
-        //   name: 'createQuiz',
-        //   builder: (context, state) => const CreateQuizScreen(),
+        //   path: createQuizBasicInfoScreen,
+        //   name: 'create-quiz-basic-info-screen',
+        //   builder: (context, state) => const CreateQuizBasicInfoScreen(),
         // ),
       ],
     );

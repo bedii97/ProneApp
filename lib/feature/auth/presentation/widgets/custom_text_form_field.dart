@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prone/core/extensions/color_extension.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -40,20 +41,20 @@ class CustomTextFormField extends StatelessWidget {
         hintText: hintText,
         labelStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
         hintStyle: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+          color: theme.colorScheme.onSurfaceVariant.withOpacityD(0.7),
         ),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.5),
+            color: theme.colorScheme.outline.withOpacityD(0.5),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.5),
+            color: theme.colorScheme.outline.withOpacityD(0.5),
           ),
         ),
         focusedBorder: OutlineInputBorder(

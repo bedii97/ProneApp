@@ -47,7 +47,7 @@ class CreatePostScreen extends StatelessWidget {
                     description: l10n.quizDescription,
                     color: Colors.purple,
                     onTap: () {
-                      context.push(AppRouter.createQuiz);
+                      context.push(AppRouter.createQuizBasicInfoScreen);
                     },
                   ),
                 ],

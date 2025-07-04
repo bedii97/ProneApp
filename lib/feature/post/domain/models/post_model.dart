@@ -43,6 +43,7 @@ class PostModel {
   final String? id;
   final String title;
   final String? body;
+  final List<String>? imageUrls;
   final String userId;
   final DateTime createdAt;
   final int totalVotes;
@@ -55,6 +56,7 @@ class PostModel {
     this.id,
     required this.title,
     this.body,
+    this.imageUrls,
     required this.userId,
     required this.createdAt,
     required this.totalVotes,
@@ -74,6 +76,9 @@ class PostModel {
       ),
       title: json['title'] as String,
       body: json['body'] as String?,
+      imageUrls: json['image_urls'] != null
+          ? List<String>.from(json['image_urls'] as List)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       totalVotes: json['total_votes'] as int? ?? 0,
       options: (json['options'] as List<dynamic>).map((option) {
@@ -83,4 +88,64 @@ class PostModel {
       userVoteOption: json['user_vote_option'] as String? ?? '',
     );
   }
+
+  ///////////////MOCK DATA FOR TESTING/////////////
+  static PostModel mockPost = PostModel(
+    id: '1',
+    title: 'Hangi programlama dili daha popüler?',
+    body:
+        'Günümüzde yazılım geliştirme dünyasında hangi programlama dilinin daha popüler olduğunu merak ediyorum. Sizce hangisi?',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&h=400&fit=crop',
+    ],
+    userId: 'user123',
+    createdAt: DateTime.now(),
+    totalVotes: 10,
+    options: [
+      OptionModel(id: '1', text: 'JavaScript', votes: 5, percentage: 50.0),
+      OptionModel(id: '2', text: 'Python', votes: 3, percentage: 30.0),
+      OptionModel(id: '3', text: 'Dart/Flutter', votes: 2, percentage: 20.0),
+    ],
+    userVoted: true,
+    userVoteOption: '1',
+    type: PostType.poll,
+  );
+
+  static PostModel mockPost2 = PostModel(
+    id: '2',
+    title: 'En iyi mobil uygulama geliştirme platformu?',
+    body: 'Mobil uygulama geliştirmek için hangi platform daha avantajlı?',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=400&fit=crop',
+    ],
+    userId: 'user456',
+    createdAt: DateTime.now().subtract(const Duration(days: 1)),
+    totalVotes: 5,
+    options: [
+      OptionModel(id: '1', text: 'Flutter', votes: 2, percentage: 40.0),
+      OptionModel(id: '2', text: 'React Native', votes: 3, percentage: 60.0),
+    ],
+    userVoted: false,
+    userVoteOption: '',
+    type: PostType.poll,
+  );
+
+  static PostModel mockPost3 = PostModel(
+    id: '3',
+    title: 'Favori IDE\'niz hangisi?',
+    body: 'Kod yazarken hangi geliştirme ortamını tercih ediyorsunuz?',
+    userId: 'user789',
+    createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    totalVotes: 0,
+    options: [
+      OptionModel(id: '1', text: 'VS Code', votes: 0, percentage: 50.0),
+      OptionModel(id: '2', text: 'Android Studio', votes: 0, percentage: 50.0),
+    ],
+    userVoted: true,
+    userVoteOption: '2',
+    type: PostType.poll,
+  );
 }

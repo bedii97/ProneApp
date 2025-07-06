@@ -14,26 +14,8 @@ class CreateQuizBasicInfoScreen extends StatefulWidget {
 }
 
 class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
-  // final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-
-  bool _hasTimeLimit = false;
-  DateTime? _expiresAt;
-
-  @override
-  void initState() {
-    //Listeners for title and description changes
-    _titleController.addListener(() {
-      context.read<CreateQuizCubit>().titleChanged(_titleController.text);
-    });
-    _descriptionController.addListener(() {
-      context.read<CreateQuizCubit>().descriptionChanged(
-        _descriptionController.text,
-      );
-    });
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -68,21 +50,21 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
             pickedTime.minute,
           ),
         );
-        setState(() {
-          _expiresAt = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
       }
+    }
+  }
+
+  setHasTimeLimit(bool value) {
+    context.read<CreateQuizCubit>().hasTimeLimitChanged(value);
+    if (!value) {
+      context.read<CreateQuizCubit>().expiresAtChanged(null);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasTimeLimit = context.watch<CreateQuizCubit>().state.hasTimeLimit;
+    final expiresAt = context.watch<CreateQuizCubit>().state.expiresAt;
     return Column(
       children: [
         // Form Content
@@ -110,6 +92,9 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                     maxLength: 100,
                     maxLines: 2,
                     validator: QuizValidator.validateQuizTitle,
+                    onChanged: (value) {
+                      context.read<CreateQuizCubit>().titleChanged(value);
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -130,6 +115,9 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                     maxLength: 500,
                     maxLines: 4,
                     validator: QuizValidator.validateQuizDescription,
+                    onChanged: (value) {
+                      context.read<CreateQuizCubit>().descriptionChanged(value);
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -154,23 +142,16 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                             contentPadding: EdgeInsets.zero,
                             title: const Text('Süre sınırı ekle'),
                             subtitle: Text(
-                              _hasTimeLimit
+                              hasTimeLimit
                                   ? 'Quiz belirli bir tarihte sona erecek'
                                   : 'Quiz süresiz olacak',
                             ),
-                            value: _hasTimeLimit,
-                            onChanged: (value) {
-                              setState(() {
-                                _hasTimeLimit = value;
-                                if (!value) {
-                                  _expiresAt = null;
-                                }
-                              });
-                            },
+                            value: hasTimeLimit,
+                            onChanged: setHasTimeLimit,
                           ),
 
                           // Date Time Picker
-                          if (_hasTimeLimit) ...[
+                          if (hasTimeLimit) ...[
                             const SizedBox(height: 16),
                             Container(
                               width: double.infinity,
@@ -212,11 +193,11 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                                           ),
                                           const SizedBox(width: 12),
                                           Text(
-                                            _expiresAt != null
-                                                ? '${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year} - ${_expiresAt!.hour.toString().padLeft(2, '0')}:${_expiresAt!.minute.toString().padLeft(2, '0')}'
+                                            expiresAt != null
+                                                ? '${expiresAt.day}/${expiresAt.month}/${expiresAt.year} - ${expiresAt.hour.toString().padLeft(2, '0')}:${expiresAt.minute.toString().padLeft(2, '0')}'
                                                 : 'Tarih ve saat seçin',
                                             style: TextStyle(
-                                              color: _expiresAt != null
+                                              color: expiresAt != null
                                                   ? Colors.black
                                                   : Colors.grey[600],
                                             ),

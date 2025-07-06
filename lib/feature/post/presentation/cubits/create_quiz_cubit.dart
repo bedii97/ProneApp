@@ -9,6 +9,10 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   // --- Event Metotları (UI'dan çağrılacak) ---
 
   int get step => state.step;
+  bool get hasTimeLimit => state.hasTimeLimit;
+  set hasTimeLimit(bool value) {
+    emit(state.copyWith(hasTimeLimit: value));
+  }
 
   void titleChanged(String value) {
     emit(state.copyWith(title: value));

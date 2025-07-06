@@ -17,9 +17,6 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  // bool _hasTimeLimit = false;
-  DateTime? _expiresAt;
-
   @override
   void dispose() {
     _titleController.dispose();
@@ -53,15 +50,6 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
             pickedTime.minute,
           ),
         );
-        setState(() {
-          _expiresAt = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
       }
     }
   }
@@ -69,13 +57,14 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
   setHasTimeLimit(bool value) {
     context.read<CreateQuizCubit>().hasTimeLimitChanged(value);
     if (!value) {
-      _expiresAt = null; // Süre sınırı kaldırıldığında bitiş tarihini sıfırla
+      context.read<CreateQuizCubit>().expiresAtChanged(null);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final hasTimeLimit = context.watch<CreateQuizCubit>().state.hasTimeLimit;
+    final expiresAt = context.watch<CreateQuizCubit>().state.expiresAt;
     return Column(
       children: [
         // Form Content
@@ -158,17 +147,7 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                                   : 'Quiz süresiz olacak',
                             ),
                             value: hasTimeLimit,
-                            onChanged: (value) {
-                              // setState(() {
-                              //   context
-                              //       .read<CreateQuizCubit>()
-                              //       .hasTimeLimitChanged(value);
-                              //   if (!value) {
-                              //     _expiresAt = null;
-                              //   }
-                              // });
-                              setHasTimeLimit(value);
-                            },
+                            onChanged: setHasTimeLimit,
                           ),
 
                           // Date Time Picker
@@ -214,11 +193,11 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
                                           ),
                                           const SizedBox(width: 12),
                                           Text(
-                                            _expiresAt != null
-                                                ? '${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year} - ${_expiresAt!.hour.toString().padLeft(2, '0')}:${_expiresAt!.minute.toString().padLeft(2, '0')}'
+                                            expiresAt != null
+                                                ? '${expiresAt.day}/${expiresAt.month}/${expiresAt.year} - ${expiresAt.hour.toString().padLeft(2, '0')}:${expiresAt.minute.toString().padLeft(2, '0')}'
                                                 : 'Tarih ve saat seçin',
                                             style: TextStyle(
-                                              color: _expiresAt != null
+                                              color: expiresAt != null
                                                   ? Colors.black
                                                   : Colors.grey[600],
                                             ),

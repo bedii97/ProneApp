@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -55,31 +57,32 @@ class _CreateQuizViewState extends State<CreateQuizView> {
 
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
-    // 1. Mevcut sayfanın formunu validate et
-    final isFormValid = _formKeys[cubit.step].currentState?.validate() ?? false;
 
-    if (!isFormValid) {
-      return; // Eğer form geçerli değilse ilerleme
+    // Step-specific validation
+    bool isValid = false;
+
+    switch (cubit.step) {
+      case 0:
+        final isFormValid = _formKeys[0].currentState?.validate() ?? false;
+        isValid = isFormValid && cubit.validateStep1();
+        break;
+      case 1: // Results step
+        isValid = cubit.validateSteps();
+        break;
+      default:
+        isValid = cubit.validateSteps();
     }
-    // Adım 1 için doğrulama yap
-    if (cubit.step == 0) {
-      if (!cubit.validateStep1()) {
-        // Hatalı giriş varsa kullanıcıyı bilgilendir
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(cubit.state.validationErrors.values.join('\n')),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      if (cubit.step < 4) {
-        setState(() => cubit.nextStep());
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+
+    if (!isValid) {
+      return;
+    }
+
+    if (cubit.step < 4) {
+      cubit.nextStep();
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 

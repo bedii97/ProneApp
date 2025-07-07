@@ -18,6 +18,14 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
   final _descriptionController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    final currentState = context.read<CreateQuizCubit>().state;
+    _titleController.text = currentState.title;
+    _descriptionController.text = currentState.description;
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();

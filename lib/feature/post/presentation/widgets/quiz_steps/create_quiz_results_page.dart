@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 
 class CreateQuizResultsPage extends StatefulWidget {
   const CreateQuizResultsPage({super.key});
@@ -10,9 +13,6 @@ class CreateQuizResultsPage extends StatefulWidget {
 }
 
 class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
-  // Mock data for UI testing
-  final List<Map<String, dynamic>> _mockResults = [];
-
   //Predefined icons
   final List<String> _availableIcons = [
     'emoji_events',
@@ -27,18 +27,6 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     'bolt',
     'nature_people',
     'celebration',
-  ];
-
-  //Predefined colors
-  final List<Color> _availableColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.purple,
-    Colors.orange,
-    Colors.red,
-    Colors.teal,
-    Colors.indigo,
-    Colors.amber,
   ];
 
   // Predefined result templates
@@ -76,67 +64,53 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
   void _addResult() {
     //Create a new result with random color and icon
     Random rnd = Random();
-    setState(() {
-      _mockResults.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'title': '',
-        'description': '',
-        'icon': _availableIcons[rnd.nextInt(_availableIcons.length)],
-        'color': _availableColors[rnd.nextInt(_availableColors.length)],
-      });
-    });
+    // setState(() {
+    //   _mockResults.add({
+    //     'id': DateTime.now().millisecondsSinceEpoch.toString(),
+    //     'title': '',
+    //     'description': '',
+    //     'icon': _availableIcons[rnd.nextInt(_availableIcons.length)],
+    //     'color': _availableColors[rnd.nextInt(_availableColors.length)],
+    //   });
+    // });
+    final result = QuizResultModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: '',
+      description: '',
+      icon: _availableIcons[rnd.nextInt(_availableIcons.length)],
+    );
 
-    // TODO: context.read<CreateQuizCubit>().addResult(newResult);
+    context.read<CreateQuizCubit>().addResult(result);
   }
 
   void _addResultFromTemplate(Map<String, dynamic> template) {
-    setState(() {
-      _mockResults.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'title': template['title'],
-        'description': template['description'],
-        'icon': template['icon'],
-        'color': template['color'],
-      });
-    });
-
-    // TODO: context.read<CreateQuizCubit>().addResultFromTemplate(template);
+    context.read<CreateQuizCubit>().addResultFromTemplate(template);
   }
 
   void _removeResult(int index) {
-    setState(() {
-      _mockResults.removeAt(index);
-    });
-
-    // TODO: context.read<CreateQuizCubit>().removeResult(index);
+    context.read<CreateQuizCubit>().removeResult(index);
   }
 
   void _duplicateResult(int index) {
-    setState(() {
-      final original = _mockResults[index];
-      _mockResults.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'title': '${original['title']} (kopya)',
-        'description': original['description'],
-        'icon': original['icon'],
-        'color': original['color'],
-      });
-    });
-
-    // TODO: context.read<CreateQuizCubit>().duplicateResult(index);
+    context.read<CreateQuizCubit>().duplicateResult(index);
   }
 
   void _updateResult(int index, Map<String, dynamic> updatedData) {
-    setState(() {
-      _mockResults[index] = {..._mockResults[index], ...updatedData};
-    });
-
-    // TODO: context.read<CreateQuizCubit>().updateResult(index, result);
+    final cubit = context.read<CreateQuizCubit>();
+    if (index >= 0 && index < cubit.state.results.length) {
+      final current = cubit.state.results[index];
+      final updated = current.copyWith(
+        title: updatedData['title'] ?? current.title,
+        description: updatedData['description'] ?? current.description,
+        icon: updatedData['icon'] ?? current.icon,
+      );
+      cubit.updateResult(index, updated);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace with BlocBuilder<CreateQuizCubit, CreateQuizState>
+    final results = context.watch<CreateQuizCubit>().state.results;
     return Column(
       children: [
         Expanded(
@@ -146,17 +120,19 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                _buildHeader(),
+                _buildHeader(
+                  context.watch<CreateQuizCubit>().state.results.length,
+                ),
                 const SizedBox(height: 24),
 
                 // Quick Templates (if no results yet)
-                if (_mockResults.isEmpty) _buildQuickTemplates(),
+                if (results.isEmpty) _buildQuickTemplates(),
 
                 // Results List
-                if (_mockResults.isEmpty)
+                if (results.isEmpty)
                   _buildEmptyState()
                 else
-                  ..._mockResults.asMap().entries.map((entry) {
+                  ...results.asMap().entries.map((entry) {
                     final index = entry.key;
                     final result = entry.value;
                     return _buildResultCard(result, index);
@@ -170,7 +146,9 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
                 const SizedBox(height: 32),
 
                 // Requirements Info
-                _buildRequirementsInfo(),
+                _buildRequirementsInfo(
+                  context.watch<CreateQuizCubit>().state.results,
+                ),
               ],
             ),
           ),
@@ -179,7 +157,7 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(int resultCount) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -194,17 +172,15 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _mockResults.length >= 2
-                    ? Colors.green[100]
-                    : Colors.grey[200],
+                color: resultCount >= 2 ? Colors.green[100] : Colors.grey[200],
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                '${_mockResults.length} sonuç',
+                '$resultCount sonuç',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: _mockResults.length >= 2
+                  color: resultCount >= 2
                       ? Colors.green[700]
                       : Colors.grey[600],
                 ),
@@ -294,7 +270,8 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     );
   }
 
-  Widget _buildResultCard(Map<String, dynamic> result, int index) {
+  Widget _buildResultCard(QuizResultModel result, int index) {
+    // Güvenli color parsing
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -312,16 +289,11 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: (result['color'] as Color).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'Sonuç ${index + 1}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: result['color'],
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
                 const Spacer(),
@@ -366,7 +338,7 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
 
             // Result Title
             TextFormField(
-              initialValue: result['title'],
+              initialValue: result.title,
               decoration: const InputDecoration(
                 labelText: 'Sonuç başlığı',
                 hintText: 'Örn: Yaratıcı Tip',
@@ -380,7 +352,7 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
 
             // Result Description
             TextFormField(
-              initialValue: result['description'],
+              initialValue: result.description,
               decoration: const InputDecoration(
                 labelText: 'Sonuç açıklaması',
                 hintText: 'Bu sonuca uyan kişinin özelliklerini açıklayın...',
@@ -525,9 +497,9 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     );
   }
 
-  Widget _buildResultPreview(Map<String, dynamic> result) {
-    final title = result['title'] as String;
-    final description = result['description'] as String;
+  Widget _buildResultPreview(QuizResultModel result) {
+    final title = result.title;
+    final description = result.description;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -553,14 +525,9 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (result['color'] as Color).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  _getIconData(result['icon']),
-                  color: result['color'],
-                  size: 24,
-                ),
+                child: Icon(_getIconData(result.icon), size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -612,12 +579,10 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     );
   }
 
-  Widget _buildRequirementsInfo() {
-    final hasEnoughResults = _mockResults.length >= 2;
-    final hasValidResults = _mockResults.every(
-      (r) =>
-          (r['title'] as String).trim().isNotEmpty &&
-          (r['description'] as String).trim().isNotEmpty,
+  Widget _buildRequirementsInfo(List<QuizResultModel> results) {
+    final hasEnoughResults = results.length >= 2;
+    final hasValidResults = results.every(
+      (r) => (r.title).trim().isNotEmpty && (r.description).trim().isNotEmpty,
     );
     final isComplete = hasEnoughResults && hasValidResults;
 

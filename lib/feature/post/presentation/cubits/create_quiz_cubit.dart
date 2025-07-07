@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
@@ -37,25 +39,40 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   void nextStep() {
-    if (validateStep()) {
+    if (state.step < 4 && validateSteps()) {
+      // Maximum step kontrolü
       emit(state.copyWith(step: state.step + 1, status: FormStatus.initial));
-    } else {
+    } else if (!validateSteps()) {
       emit(state.copyWith(status: FormStatus.invalid));
     }
   }
 
   void previousStep() {
     if (state.step > 0) {
-      emit(state.copyWith(step: state.step - 1, status: FormStatus.initial));
+      emit(
+        state.copyWith(
+          step: state.step - 1,
+          status: FormStatus.initial,
+          validationErrors: {}, // Geriye giderken hataları temizle
+        ),
+      );
     }
   }
 
   // --- Doğrulama ve Adım İlerleme Mantığı ---
 
-  bool validateStep() {
-    bool isValid = true;
-    isValid = state.step == 0 ? validateStep1() : isValid;
-    return isValid;
+  // Doğru implementasyon:
+  bool validateSteps() {
+    switch (state.step) {
+      case 0:
+        return validateStep1();
+      case 1:
+        return validateStep2();
+      // case 2: return validateStep3(); // Questions step
+      // case 3: return validateStep4(); // Scoring step
+      default:
+        return true;
+    }
   }
 
   bool validateStep1() {
@@ -89,8 +106,6 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     return true;
   }
 
-  // TODO: validateStep2(), validateStep3() ...
-
   Future<void> publishQuiz() async {
     // Tüm adımların validasyonunu tekrar kontrol et...
     if (!validateStep1() /* && !validateStep2() ... */ ) {
@@ -117,5 +132,75 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
         ),
       );
     }
+  }
+
+  //Quiz Results Management
+  // Results management
+  void addResult(QuizResultModel result) {
+    final updatedResults = [...state.results, result];
+    emit(state.copyWith(results: updatedResults));
+  }
+
+  void addResultFromTemplate(Map<String, dynamic> template) {
+    final result = QuizResultModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: template['title'] ?? '',
+      description: template['description'] ?? '',
+      icon: template['icon'] ?? 'emoji_events',
+    );
+    addResult(result);
+  }
+
+  void updateResult(int index, QuizResultModel updatedResult) {
+    if (index >= 0 && index < state.results.length) {
+      final updatedResults = [...state.results];
+      updatedResults[index] = updatedResult;
+      emit(state.copyWith(results: updatedResults));
+    }
+  }
+
+  void removeResult(int index) {
+    if (index >= 0 && index < state.results.length) {
+      final updatedResults = [...state.results];
+      updatedResults.removeAt(index);
+      emit(state.copyWith(results: updatedResults));
+    }
+  }
+
+  void duplicateResult(int index) {
+    if (index >= 0 && index < state.results.length) {
+      final original = state.results[index];
+      final duplicate = original.copyWith(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: '${original.title} (kopya)',
+      );
+      addResult(duplicate);
+    }
+  }
+
+  // Step 2 validation
+  bool validateStep2() {
+    final hasEnoughResults = state.results.length >= 2;
+    final hasValidResults = state.results.every(
+      (r) => r.title.trim().isNotEmpty && r.description.trim().isNotEmpty,
+    );
+
+    final errors = <String, String>{};
+    if (!hasEnoughResults) {
+      errors['results'] = 'En az 2 sonuç gereklidir';
+    }
+    if (!hasValidResults) {
+      errors['results'] = 'Tüm sonuçların başlık ve açıklaması doldurulmalıdır';
+    }
+
+    if (errors.isNotEmpty) {
+      emit(
+        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
+      );
+      return false;
+    }
+
+    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
+    return true;
   }
 }

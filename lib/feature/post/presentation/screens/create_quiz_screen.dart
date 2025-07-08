@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_basic_info_page.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_question_page.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_results_page.dart';
 
 class CreateQuizScreen extends StatelessWidget {
@@ -45,9 +46,7 @@ class _CreateQuizViewState extends State<CreateQuizView> {
     _formKeys = List.generate(5, (index) => GlobalKey<FormState>());
     stepWidgets = [
       CreateQuizBasicInfoScreen(formKey: _formKeys[0]),
-      CreateQuizResultsPage(),
-      // CreateQuizScoringPage(),
-      // Container(color: Colors.red),
+      CreateQuizQuestionScreen(formKey: _formKeys[1]),
       Container(color: Colors.green),
       Container(color: Colors.blue),
       Container(color: Colors.yellow),
@@ -57,25 +56,25 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
 
-    // Step-specific validation
-    bool isValid = false;
+    // 1. Mevcut sayfanın formunu validate et
+    final isFormValid = _formKeys[cubit.step].currentState?.validate() ?? false;
 
-    switch (cubit.step) {
-      case 0:
-        final isFormValid = _formKeys[0].currentState?.validate() ?? false;
-        isValid = isFormValid && cubit.validateStep1();
-        break;
-      case 1: // Results step
-        isValid = cubit.validateSteps();
-        break;
-      default:
-        isValid = cubit.validateSteps();
-    }
-
-    if (!isValid) {
+    if (!isFormValid) {
       return;
     }
 
+    // 2. Cubit seviyesinde validasyon yap
+    if (!cubit.validateCurrentStep()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(cubit.state.validationErrors.values.join('\n')),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 3. Başarılıysa bir sonraki adıma geç
     if (cubit.step < 4) {
       cubit.nextStep();
       _pageController.nextPage(

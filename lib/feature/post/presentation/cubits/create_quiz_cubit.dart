@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';

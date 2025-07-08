@@ -1,3 +1,5 @@
+import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+
 enum FormStatus {
   initial,
   validating,
@@ -15,14 +17,12 @@ class CreateQuizState {
   final bool hasTimeLimit;
   final DateTime? expiresAt;
 
-  // TODO: Adım 2, 3, 4 için veriler eklenecek
-  // final List<QuestionModel> questions;
-  // final List<ResultModel> results;
+  // Adım 2: Sorular
+  final List<QuizQuestion> questions;
 
   // Genel Durum
   final FormStatus status;
   final String? errorMessage;
-  // Hangi adımdaki hangi alanın hatalı olduğunu belirtmek için
   final Map<String, String> validationErrors;
 
   const CreateQuizState({
@@ -31,8 +31,7 @@ class CreateQuizState {
     this.description = '',
     this.hasTimeLimit = false,
     this.expiresAt,
-    // this.questions = const [],
-    // this.results = const [],
+    this.questions = const [],
     this.status = FormStatus.initial,
     this.errorMessage,
     this.validationErrors = const {},
@@ -44,8 +43,7 @@ class CreateQuizState {
     String? description,
     bool? hasTimeLimit,
     DateTime? expiresAt,
-    // List<QuestionModel>? questions,
-    // List<ResultModel>? results,
+    List<QuizQuestion>? questions,
     FormStatus? status,
     String? errorMessage,
     Map<String, String>? validationErrors,
@@ -56,8 +54,7 @@ class CreateQuizState {
       description: description ?? this.description,
       hasTimeLimit: hasTimeLimit ?? this.hasTimeLimit,
       expiresAt: expiresAt ?? this.expiresAt,
-      // questions: questions ?? this.questions,
-      // results: results ?? this.results,
+      questions: questions ?? this.questions,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       validationErrors: validationErrors ?? this.validationErrors,

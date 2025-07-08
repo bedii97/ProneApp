@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_basic_info_page.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_question_page.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_results_page.dart';
 
 class CreateQuizScreen extends StatelessWidget {
@@ -45,8 +46,7 @@ class _CreateQuizViewState extends State<CreateQuizView> {
     _formKeys = List.generate(5, (index) => GlobalKey<FormState>());
     stepWidgets = [
       CreateQuizBasicInfoScreen(formKey: _formKeys[0]),
-      CreateQuizResultsPage(),
-      // Container(color: Colors.red),
+      CreateQuizQuestionScreen(formKey: _formKeys[1]),
       Container(color: Colors.green),
       Container(color: Colors.blue),
       Container(color: Colors.yellow),
@@ -55,31 +55,32 @@ class _CreateQuizViewState extends State<CreateQuizView> {
 
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
+
     // 1. Mevcut sayfanın formunu validate et
     final isFormValid = _formKeys[cubit.step].currentState?.validate() ?? false;
 
     if (!isFormValid) {
-      return; // Eğer form geçerli değilse ilerleme
+      return;
     }
-    // Adım 1 için doğrulama yap
-    if (cubit.step == 0) {
-      if (!cubit.validateStep1()) {
-        // Hatalı giriş varsa kullanıcıyı bilgilendir
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(cubit.state.validationErrors.values.join('\n')),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      if (cubit.step < 4) {
-        setState(() => cubit.nextStep());
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+
+    // 2. Cubit seviyesinde validasyon yap
+    if (!cubit.validateCurrentStep()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(cubit.state.validationErrors.values.join('\n')),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 3. Başarılıysa bir sonraki adıma geç
+    if (cubit.step < 4) {
+      cubit.nextStep();
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 

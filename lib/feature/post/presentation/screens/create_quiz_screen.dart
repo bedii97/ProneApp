@@ -55,31 +55,32 @@ class _CreateQuizViewState extends State<CreateQuizView> {
 
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
+
     // 1. Mevcut sayfanın formunu validate et
     final isFormValid = _formKeys[cubit.step].currentState?.validate() ?? false;
 
     if (!isFormValid) {
-      return; // Eğer form geçerli değilse ilerleme
+      return;
     }
-    // Adım 1 için doğrulama yap
-    if (cubit.step == 0) {
-      if (!cubit.validateStep1()) {
-        // Hatalı giriş varsa kullanıcıyı bilgilendir
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(cubit.state.validationErrors.values.join('\n')),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      if (cubit.step < 4) {
-        setState(() => cubit.nextStep());
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+
+    // 2. Cubit seviyesinde validasyon yap
+    if (!cubit.validateCurrentStep()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(cubit.state.validationErrors.values.join('\n')),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 3. Başarılıysa bir sonraki adıma geç
+    if (cubit.step < 4) {
+      cubit.nextStep();
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 

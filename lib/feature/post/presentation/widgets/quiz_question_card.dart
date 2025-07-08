@@ -43,6 +43,7 @@ class QuizQuestionCard extends StatelessWidget {
 
             QuizOptionsList(
               question: question,
+              questionIndex: questionNumber - 1,
               onOptionsChanged: onOptionsChanged,
             ),
           ],

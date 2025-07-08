@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_question_card.dart';
 
 class CreateQuizQuestionScreen extends StatefulWidget {
@@ -12,63 +14,58 @@ class CreateQuizQuestionScreen extends StatefulWidget {
 }
 
 class _CreateQuizQuestionScreenState extends State<CreateQuizQuestionScreen> {
-  List<QuizQuestion> questions = [QuizQuestion()];
-
-  void _addQuestion() {
-    setState(() {
-      questions.add(QuizQuestion());
-    });
-  }
-
-  void _removeQuestion(int index) {
-    if (questions.length > 1) {
-      setState(() {
-        questions.removeAt(index);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: questions.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: QuizQuestionCard(
-                    question: questions[index],
-                    questionNumber: index + 1,
-                    onRemove: questions.length > 1
-                        ? () => _removeQuestion(index)
-                        : null,
-                    onQuestionChanged: (value) {
-                      setState(() {
-                        questions[index].questionText = value;
-                      });
-                    },
-                    onOptionsChanged: () {
-                      setState(() {});
+    return BlocBuilder<CreateQuizCubit, CreateQuizState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: widget.formKey,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: state.questions.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: QuizQuestionCard(
+                          question: state.questions[index],
+                          questionNumber: index + 1,
+                          onRemove: state.questions.length > 1
+                              ? () => context
+                                    .read<CreateQuizCubit>()
+                                    .removeQuestion(index)
+                              : null,
+                          onQuestionChanged: (value) {
+                            context.read<CreateQuizCubit>().updateQuestionText(
+                              index,
+                              value,
+                            );
+                          },
+                          onOptionsChanged: () {
+                            setState(() {}); // UI'ı yenile
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
+                ),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      context.read<CreateQuizCubit>().addQuestion(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Soru Ekle'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                ),
+              ],
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: _addQuestion,
-            icon: const Icon(Icons.add),
-            label: const Text('Soru Ekle'),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

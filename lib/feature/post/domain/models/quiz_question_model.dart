@@ -1,6 +1,6 @@
 class QuizQuestion {
-  String questionText = '';
-  List<String> options = [''];
+  String questionText;
+  List<String> options;
   int? correctAnswerIndex;
 
   QuizQuestion({

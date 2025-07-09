@@ -44,54 +44,30 @@ class QuizPreviewQuestion extends StatelessWidget {
 
         // Options
         ...options.asMap().entries.map((entry) {
-          final index = entry.key;
           final option = entry.value;
-          final isSelected = selectedAnswer == index;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: InkWell(
-              onTap: () => onAnswerSelected(index),
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue[100] : Colors.white,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isSelected ? Colors.blue[400]! : Colors.grey[300]!,
-                    width: isSelected ? 2 : 1,
-                  ),
+                  border: Border.all(color: Colors.grey[300]!, width: 1),
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected ? Colors.blue : Colors.white,
-                        border: Border.all(color: Colors.blue),
-                      ),
-                      child: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 16,
-                            )
-                          : null,
-                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         option,
                         style: TextStyle(
                           fontSize: 16,
-                          color: isSelected ? Colors.blue[800] : Colors.black87,
-                          fontWeight: isSelected
-                              ? FontWeight.w500
-                              : FontWeight.normal,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ),

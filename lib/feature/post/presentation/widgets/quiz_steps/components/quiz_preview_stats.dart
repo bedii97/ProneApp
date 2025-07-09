@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prone/core/extensions/color_extension.dart';
 
 class QuizPreviewStats extends StatelessWidget {
   final int questionCount;
@@ -53,9 +54,6 @@ class QuizPreviewStats extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-
-            // Quiz Ready Status
-            _buildReadyStatus(),
           ],
         ),
       ),
@@ -71,9 +69,9 @@ class QuizPreviewStats extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacityD(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacityD(0.3)),
       ),
       child: Column(
         children: [
@@ -92,56 +90,6 @@ class QuizPreviewStats extends StatelessWidget {
             label,
             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReadyStatus() {
-    final isReady = questionCount >= 1 && resultCount >= 2;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isReady ? Colors.green[50] : Colors.orange[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isReady ? Colors.green[200]! : Colors.orange[200]!,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            isReady ? Icons.check_circle : Icons.warning,
-            color: isReady ? Colors.green[600] : Colors.orange[600],
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isReady ? 'Quiz Hazır!' : 'Quiz Tamamlanmadı',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isReady ? Colors.green[700] : Colors.orange[700],
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  isReady
-                      ? 'Quiz yayınlamaya hazır'
-                      : 'En az 1 soru ve 2 sonuç gerekli',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isReady ? Colors.green[600] : Colors.orange[600],
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
@@ -86,15 +87,6 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     emit(state.copyWith(questions: updatedQuestions));
   }
 
-  void nextStep() {
-    if (state.step < 4 && validateSteps()) {
-      // Maximum step kontrolü
-      emit(state.copyWith(step: state.step + 1, status: FormStatus.initial));
-    } else if (!validateSteps()) {
-      emit(state.copyWith(status: FormStatus.invalid));
-    }
-  }
-
   void previousStep() {
     if (state.step > 0) {
       emit(
@@ -109,15 +101,36 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
 
   // --- Doğrulama Mantığı ---
 
-  // Doğru implementasyon:
-  bool validateSteps() {
+  // ✅ Navigation with validation
+  void nextStep() {
+    if (!validateCurrentStep()) {
+      return; // Validation error - state'te zaten error var
+    }
+
+    if (state.step < 4) {
+      emit(
+        state.copyWith(
+          step: state.step + 1,
+          status: FormStatus.initial,
+          validationErrors: {},
+        ),
+      );
+    }
+  }
+
+  // ✅ Ana validation method - tüm step'ler için
+  bool validateCurrentStep() {
     switch (state.step) {
       case 0:
         return validateStep1();
       case 1:
         return validateStep2();
-      // case 2: return validateStep3(); // Questions step
-      // case 3: return validateStep4(); // Scoring step
+      case 2:
+        return validateStep3();
+      case 3:
+      // return validateStep4(); // Scoring
+      case 4:
+      // return validateStep5(); // Preview
       default:
         return true;
     }
@@ -208,6 +221,32 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     return true;
   }
 
+  // Step 2 validation
+  bool validateStep3() {
+    final hasEnoughResults = state.results.length >= 2;
+    final hasValidResults = state.results.every(
+      (r) => r.title.trim().isNotEmpty && r.description.trim().isNotEmpty,
+    );
+
+    final errors = <String, String>{};
+    if (!hasEnoughResults) {
+      errors['results'] = 'En az 2 sonuç gereklidir';
+    }
+    if (!hasValidResults) {
+      errors['results'] = 'Tüm sonuçların başlık ve açıklaması doldurulmalıdır';
+    }
+
+    if (errors.isNotEmpty) {
+      emit(
+        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
+      );
+      return false;
+    }
+
+    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
+    return true;
+  }
+
   Future<void> publishQuiz() async {
     if (!validateStep1() || !validateStep2()) {
       emit(
@@ -275,31 +314,5 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
       );
       addResult(duplicate);
     }
-  }
-
-  // Step 2 validation
-  bool validateStep2() {
-    final hasEnoughResults = state.results.length >= 2;
-    final hasValidResults = state.results.every(
-      (r) => r.title.trim().isNotEmpty && r.description.trim().isNotEmpty,
-    );
-
-    final errors = <String, String>{};
-    if (!hasEnoughResults) {
-      errors['results'] = 'En az 2 sonuç gereklidir';
-    }
-    if (!hasValidResults) {
-      errors['results'] = 'Tüm sonuçların başlık ve açıklaması doldurulmalıdır';
-    }
-
-    if (errors.isNotEmpty) {
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
-    return true;
   }
 }

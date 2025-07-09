@@ -1,4 +1,5 @@
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 
 enum FormStatus {
   initial,

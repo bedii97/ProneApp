@@ -1,4 +1,5 @@
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 
 enum FormStatus {
   initial,
@@ -16,6 +17,8 @@ class CreateQuizState {
   final String description;
   final bool hasTimeLimit;
   final DateTime? expiresAt;
+
+  final List<QuizResultModel> results;
 
   // Adım 2: Sorular
   final List<QuizQuestion> questions;
@@ -35,6 +38,7 @@ class CreateQuizState {
     this.status = FormStatus.initial,
     this.errorMessage,
     this.validationErrors = const {},
+    this.results = const [],
   });
 
   CreateQuizState copyWith({
@@ -47,6 +51,7 @@ class CreateQuizState {
     FormStatus? status,
     String? errorMessage,
     Map<String, String>? validationErrors,
+    List<QuizResultModel>? results,
   }) {
     return CreateQuizState(
       step: step ?? this.step,
@@ -58,6 +63,7 @@ class CreateQuizState {
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       validationErrors: validationErrors ?? this.validationErrors,
+      results: results ?? this.results,
     );
   }
 }

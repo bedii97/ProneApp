@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_basic_info_page.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_question_page.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_results_page.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_socring_page.dart';
 
 class CreateQuizScreen extends StatelessWidget {
   const CreateQuizScreen({super.key});
@@ -27,8 +29,6 @@ class CreateQuizView extends StatefulWidget {
 
 class _CreateQuizViewState extends State<CreateQuizView> {
   final PageController _pageController = PageController();
-  late final List<GlobalKey<FormState>> _formKeys;
-  // int _currentStep = 0;
 
   final List<String> _stepTitles = [
     'Temel Bilgiler',
@@ -43,12 +43,11 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   @override
   void initState() {
     super.initState();
-    _formKeys = List.generate(5, (index) => GlobalKey<FormState>());
     stepWidgets = [
-      CreateQuizBasicInfoScreen(formKey: _formKeys[0]),
-      CreateQuizQuestionScreen(formKey: _formKeys[1]),
-      Container(color: Colors.green),
-      Container(color: Colors.blue),
+      CreateQuizBasicInfoScreen(),
+      CreateQuizQuestionScreen(),
+      CreateQuizResultsPage(),
+      CreateQuizScoringPage(),
       Container(color: Colors.yellow),
     ];
   }
@@ -56,32 +55,34 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
 
-    // 1. Mevcut sayfanın formunu validate et
-    final isFormValid = _formKeys[cubit.step].currentState?.validate() ?? false;
+    // ✅ Sadece cubit'i çağır - validation cubit'te
+    cubit.nextStep();
 
-    if (!isFormValid) {
+    // ✅ Validation error varsa UI'da göster
+    if (cubit.state.status == FormStatus.invalid) {
+      _showValidationErrors(cubit.state.validationErrors);
       return;
     }
 
-    // 2. Cubit seviyesinde validasyon yap
-    if (!cubit.validateCurrentStep()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(cubit.state.validationErrors.values.join('\n')),
-          backgroundColor: Colors.red,
+    // ✅ Success ise sayfayı değiştir
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _showValidationErrors(Map<String, String> errors) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: errors.values.map((error) => Text('• $error')).toList(),
         ),
-      );
-      return;
-    }
-
-    // 3. Başarılıysa bir sonraki adıma geç
-    if (cubit.step < 4) {
-      cubit.nextStep();
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+        backgroundColor: Colors.red,
+        // behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _publishQuiz() {

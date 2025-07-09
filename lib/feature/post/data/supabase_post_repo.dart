@@ -2,7 +2,8 @@ import 'dart:developer';
 
 import 'package:prone/core/constants/supabase_constants.dart';
 import 'package:prone/feature/post/domain/models/create_poll_model.dart';
-import 'package:prone/feature/post/domain/models/post_model.dart';
+import 'package:prone/feature/post/domain/models/poll_model.dart';
+
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,7 +11,7 @@ class SupabasePostRepo extends PostRepo {
   final _supabase = Supabase.instance.client;
 
   @override
-  Future<PostModel> createPoll({required CreatePollModel post}) async {
+  Future<PollModel> createPoll({required CreatePollModel post}) async {
     try {
       final user = _getCurrentUser();
       post = post.copyWith(userId: user?.id);
@@ -40,31 +41,7 @@ class SupabasePostRepo extends PostRepo {
           .select();
 
       inspect(optionResponse);
-
-      // return PostModel(
-      //   id: createdPost.id,
-      //   userId: createdPost.userId,
-      //   title: createdPost.title,
-      //   body: createdPost.body,
-      //   type: createdPost.type,
-      //   createdAt: createdPost.createdAt,
-      //   totalVotes: createdPost.totalVotes,
-      //   userVoted: createdPost.userVoted,
-      //   userVoteOption: createdPost.userVoteOption,
-      //   // options: optionResponse
-      //   //     .map((option) => OptionModel.fromJson(option))
-      //   //     .toList(),
-      //   options: [],
-      // );
-      return PostModel(
-        title: "title",
-        userId: "userId",
-        createdAt: DateTime.now(),
-        totalVotes: 0,
-        options: [],
-        userVoted: false,
-        userVoteOption: "userVoteOption",
-      );
+      return PollModel.fromJson(postResponse);
     } catch (e) {
       inspect(e);
       throw Exception('Post creation failed: $e');

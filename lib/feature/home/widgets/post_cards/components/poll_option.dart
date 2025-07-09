@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:prone/core/extensions/color_extension.dart';
-import 'package:prone/feature/post/domain/models/post_model.dart';
+import 'package:prone/feature/post/domain/models/option_model.dart';
+import 'package:prone/feature/post/domain/models/poll_model.dart';
 
 class PollOption extends StatelessWidget {
   final OptionModel option;
-  final PostModel post;
+  final PollModel poll;
 
-  const PollOption({super.key, required this.option, required this.post});
+  const PollOption({super.key, required this.option, required this.poll});
 
   @override
   Widget build(BuildContext context) {
-    if (post.userVoted) {
+    if (poll.userVoted) {
       return _buildResultOption(context);
     } else {
       return _buildVoteOption(context);
@@ -18,7 +19,7 @@ class PollOption extends StatelessWidget {
   }
 
   Widget _buildResultOption(BuildContext context) {
-    final bool isSelectedOption = post.userVoteOption == option.id;
+    final bool isSelectedOption = poll.userVoteOption == option.id;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),

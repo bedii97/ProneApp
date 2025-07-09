@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/post_model.dart';
+import 'package:prone/feature/post/domain/models/poll_model.dart';
+
 import 'components/post_header.dart';
 import 'components/post_content.dart';
 import 'components/post_footer.dart';
 import 'components/poll_section.dart';
 
-class PostCard extends StatelessWidget {
-  final PostModel post;
+class PollCard extends StatelessWidget {
+  final PollModel poll; // ✅ PollModel al
 
-  const PostCard({super.key, required this.post});
+  const PollCard({super.key, required this.poll});
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +23,18 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PostHeader(post: post),
+            PostHeader(post: poll), // ✅ poll polymorphic olarak geçer
             const SizedBox(height: 16),
 
-            PostContent(post: post),
+            PostContent(post: poll), // ✅ poll polymorphic olarak geçer
             const SizedBox(height: 16),
-            if (post.type == PostType.poll) PollSection(post: post),
+
+            // ✅ Direkt PollSection kullan
+            PollSection(poll: poll),
+
             const SizedBox(height: 12),
 
-            PostFooter(post: post),
+            PostFooter(post: poll), // ✅ poll polymorphic olarak geçer
           ],
         ),
       ),

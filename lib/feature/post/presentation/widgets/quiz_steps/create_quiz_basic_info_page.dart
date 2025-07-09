@@ -29,6 +29,7 @@ class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    formKey.currentState?.dispose();
     super.dispose();
   }
 

@@ -1,5 +1,6 @@
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
 
 enum FormStatus {
   initial,
@@ -19,9 +20,10 @@ class CreateQuizState {
   final DateTime? expiresAt;
 
   final List<QuizResultModel> results;
+  final List<QuizScoringModel> scoring;
 
   // Adım 2: Sorular
-  final List<QuizQuestion> questions;
+  final List<QuizQuestionModel> questions;
 
   // Genel Durum
   final FormStatus status;
@@ -39,6 +41,7 @@ class CreateQuizState {
     this.errorMessage,
     this.validationErrors = const {},
     this.results = const [],
+    this.scoring = const [],
   });
 
   CreateQuizState copyWith({
@@ -47,11 +50,12 @@ class CreateQuizState {
     String? description,
     bool? hasTimeLimit,
     DateTime? expiresAt,
-    List<QuizQuestion>? questions,
+    List<QuizQuestionModel>? questions,
     FormStatus? status,
     String? errorMessage,
     Map<String, String>? validationErrors,
     List<QuizResultModel>? results,
+    List<QuizScoringModel>? scoring,
   }) {
     return CreateQuizState(
       step: step ?? this.step,
@@ -64,6 +68,7 @@ class CreateQuizState {
       errorMessage: errorMessage ?? this.errorMessage,
       validationErrors: validationErrors ?? this.validationErrors,
       results: results ?? this.results,
+      scoring: scoring ?? this.scoring,
     );
   }
 }

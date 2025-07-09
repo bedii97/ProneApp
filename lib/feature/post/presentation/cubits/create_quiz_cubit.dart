@@ -5,7 +5,19 @@ import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
-  CreateQuizCubit() : super(CreateQuizState(questions: [QuizQuestion()]));
+  // ✅ Constructor'ı düzelt
+  CreateQuizCubit()
+    : super(
+        CreateQuizState(
+          questions: [
+            QuizQuestionModel(
+              id: DateTime.now().millisecondsSinceEpoch.toString(), // ✅ ID ekle
+              questionText: '',
+              options: ['', ''], // ✅ En az 2 boş seçenek
+            ),
+          ],
+        ),
+      );
 
   // --- Event Metotları (UI'dan çağrılacak) ---
 
@@ -34,22 +46,29 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   // Soru yönetimi
+  // ✅ addQuestion method'unu düzelt
   void addQuestion() {
-    final updatedQuestions = List<QuizQuestion>.from(state.questions)
-      ..add(QuizQuestion());
+    final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
+      ..add(
+        QuizQuestionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(), // ✅ ID ekle
+          questionText: '',
+          options: ['', ''], // ✅ En az 2 boş seçenek
+        ),
+      );
     emit(state.copyWith(questions: updatedQuestions));
   }
 
   void removeQuestion(int index) {
     if (state.questions.length > 1) {
-      final updatedQuestions = List<QuizQuestion>.from(state.questions)
+      final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
         ..removeAt(index);
       emit(state.copyWith(questions: updatedQuestions));
     }
   }
 
   void updateQuestionText(int index, String text) {
-    final updatedQuestions = List<QuizQuestion>.from(state.questions);
+    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
     updatedQuestions[index] = updatedQuestions[index].copyWith(
       questionText: text,
     );
@@ -57,7 +76,7 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   void addOption(int questionIndex) {
-    final updatedQuestions = List<QuizQuestion>.from(state.questions);
+    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
     final options = List<String>.from(updatedQuestions[questionIndex].options)
       ..add('');
     updatedQuestions[questionIndex] = updatedQuestions[questionIndex].copyWith(
@@ -67,7 +86,7 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   void removeOption(int questionIndex, int optionIndex) {
-    final updatedQuestions = List<QuizQuestion>.from(state.questions);
+    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
     final options = List<String>.from(updatedQuestions[questionIndex].options);
     if (options.length > 1) {
       options.removeAt(optionIndex);
@@ -78,7 +97,7 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   void updateOption(int questionIndex, int optionIndex, String value) {
-    final updatedQuestions = List<QuizQuestion>.from(state.questions);
+    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
     final options = List<String>.from(updatedQuestions[questionIndex].options);
     options[optionIndex] = value;
     updatedQuestions[questionIndex] = updatedQuestions[questionIndex].copyWith(
@@ -285,6 +304,7 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
       title: template['title'] ?? '',
       description: template['description'] ?? '',
       icon: template['icon'] ?? 'emoji_events',
+      colorValue: template['colorValue'] ?? '#FFFFFF', // Default color
     );
     addResult(result);
   }

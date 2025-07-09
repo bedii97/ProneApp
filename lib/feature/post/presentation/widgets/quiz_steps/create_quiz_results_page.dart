@@ -43,6 +43,7 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
       title: '',
       description: '',
       icon: _availableIcons[rnd.nextInt(_availableIcons.length)],
+      colorValue: '#FFFFFF', // Default color
     );
 
     context.read<CreateQuizCubit>().addResult(result);

@@ -5,7 +5,7 @@ import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_option_item.dart';
 
 class QuizOptionsList extends StatelessWidget {
-  final QuizQuestion question;
+  final QuizQuestionModel question;
   final int questionIndex;
   final VoidCallback onOptionsChanged;
 
@@ -49,7 +49,7 @@ class QuizOptionsList extends StatelessWidget {
               onOptionsChanged();
             },
           );
-        }).toList(),
+        }),
 
         // Add option button
         TextButton.icon(

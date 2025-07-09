@@ -5,7 +5,7 @@ import 'package:prone/feature/post/presentation/widgets/quiz_question_text_input
 import 'package:prone/feature/post/presentation/widgets/quiz_options_list.dart';
 
 class QuizQuestionCard extends StatelessWidget {
-  final QuizQuestion question;
+  final QuizQuestionModel question;
   final int questionNumber;
   final VoidCallback? onRemove;
   final Function(String) onQuestionChanged;

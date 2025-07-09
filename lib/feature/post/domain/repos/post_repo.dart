@@ -1,9 +1,9 @@
 import 'package:prone/feature/post/domain/models/create_poll_model.dart';
-import 'package:prone/feature/post/domain/models/post_model.dart';
+import 'package:prone/feature/post/domain/models/poll_model.dart';
 
 abstract class PostRepo {
   // Method to create a post
-  Future<PostModel> createPoll({required CreatePollModel post});
+  Future<PollModel> createPoll({required CreatePollModel post});
 
   // Method to fetch all posts
   Future<List<Map<String, dynamic>>> fetchPosts();

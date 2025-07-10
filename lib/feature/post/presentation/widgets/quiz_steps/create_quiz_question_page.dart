@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_question_card.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/components.dart';
 
 class CreateQuizQuestionPage extends StatefulWidget {
   // final GlobalKey<FormState> formKey;

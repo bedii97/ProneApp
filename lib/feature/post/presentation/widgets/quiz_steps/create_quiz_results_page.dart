@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_result_card.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_add_button.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_empty_state.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_header.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_requirements.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_templates.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/components.dart';
 
 class CreateQuizResultsPage extends StatefulWidget {
   const CreateQuizResultsPage({super.key});

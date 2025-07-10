@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_header.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_stats.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_questions_container.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_results.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_actions.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_dialog.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/components.dart';
 
 class CreateQuizPreviewPage extends StatefulWidget {
   const CreateQuizPreviewPage({super.key});

@@ -21,7 +21,7 @@ class QuizQuestionTextInput extends StatelessWidget {
       ),
       maxLines: 2,
       onChanged: onChanged,
-      validator: QuizValidator.validateQuizTitle,
+      validator: QuizValidator.validateQuizQuestion,
     );
   }
 }

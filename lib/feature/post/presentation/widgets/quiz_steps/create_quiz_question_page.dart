@@ -53,7 +53,11 @@ class _CreateQuizQuestionScreenState extends State<CreateQuizQuestionScreen> {
                                   .updateQuestionText(index, value);
                             },
                             onOptionsChanged: () {
-                              setState(() {}); // UI'ı yenile
+                              // Notify the cubit that options have changed
+                              // context.read<CreateQuizCubit>().updateOptions(
+                              //       index,
+                              //       state.questions[index].options,
+                              //     );
                             },
                           ),
                         );

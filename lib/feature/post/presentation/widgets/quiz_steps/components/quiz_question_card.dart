@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_question_header.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_question_text_input.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_options_list.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_question_header.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_question_text_input.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_options_list.dart';
 
 class QuizQuestionCard extends StatelessWidget {
   final QuizQuestionModel question;

@@ -1,3 +1,5 @@
+// ignore_for_file: unreachable_switch_default
+
 import 'package:flutter/material.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';

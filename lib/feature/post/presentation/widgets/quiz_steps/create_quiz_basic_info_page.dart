@@ -4,15 +4,15 @@ import 'package:prone/core/utils/quiz_validator.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 
-class CreateQuizBasicInfoScreen extends StatefulWidget {
-  const CreateQuizBasicInfoScreen({super.key});
+class CreateQuizBasicInfoPage extends StatefulWidget {
+  const CreateQuizBasicInfoPage({super.key});
 
   @override
-  State<CreateQuizBasicInfoScreen> createState() =>
-      _CreateQuizBasicInfoScreenState();
+  State<CreateQuizBasicInfoPage> createState() =>
+      _CreateQuizBasicInfoPageState();
 }
 
-class _CreateQuizBasicInfoScreenState extends State<CreateQuizBasicInfoScreen> {
+class _CreateQuizBasicInfoPageState extends State<CreateQuizBasicInfoPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();

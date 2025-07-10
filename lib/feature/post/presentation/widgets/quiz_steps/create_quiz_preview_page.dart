@@ -6,15 +6,14 @@ import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/qu
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_actions.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_preview_dialog.dart';
 
-class CreateQuizPreviewScreen extends StatefulWidget {
-  const CreateQuizPreviewScreen({super.key});
+class CreateQuizPreviewPage extends StatefulWidget {
+  const CreateQuizPreviewPage({super.key});
 
   @override
-  State<CreateQuizPreviewScreen> createState() =>
-      _CreateQuizPreviewScreenState();
+  State<CreateQuizPreviewPage> createState() => _CreateQuizPreviewPageState();
 }
 
-class _CreateQuizPreviewScreenState extends State<CreateQuizPreviewScreen> {
+class _CreateQuizPreviewPageState extends State<CreateQuizPreviewPage> {
   int currentQuestionIndex = 0;
   Map<int, int> selectedAnswers = {};
 

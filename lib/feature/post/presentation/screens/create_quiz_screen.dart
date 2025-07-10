@@ -3,11 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_basic_info_page.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_preview.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_question_page.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_results_page.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/create_quiz_socring_page.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_steps.dart';
 
 class CreateQuizScreen extends StatelessWidget {
   const CreateQuizScreen({super.key});
@@ -45,11 +41,11 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   void initState() {
     super.initState();
     stepWidgets = [
-      CreateQuizBasicInfoScreen(),
-      CreateQuizQuestionScreen(),
+      CreateQuizBasicInfoPage(),
+      CreateQuizQuestionPage(),
       CreateQuizResultsPage(),
       CreateQuizScoringPage(),
-      CreateQuizPreviewScreen(),
+      CreateQuizPreviewPage(),
     ];
   }
 

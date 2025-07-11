@@ -9,7 +9,6 @@ class QuizQuestionCard extends StatelessWidget {
   final int questionNumber;
   final VoidCallback? onRemove;
   final Function(String) onQuestionChanged;
-  final VoidCallback onOptionsChanged;
 
   const QuizQuestionCard({
     super.key,
@@ -17,7 +16,6 @@ class QuizQuestionCard extends StatelessWidget {
     required this.questionNumber,
     this.onRemove,
     required this.onQuestionChanged,
-    required this.onOptionsChanged,
   });
 
   @override
@@ -44,7 +42,6 @@ class QuizQuestionCard extends StatelessWidget {
             QuizOptionsList(
               question: question,
               questionIndex: questionNumber - 1,
-              onOptionsChanged: onOptionsChanged,
             ),
           ],
         ),

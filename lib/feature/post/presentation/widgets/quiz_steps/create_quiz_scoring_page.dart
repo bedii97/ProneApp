@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
+import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 
 class CreateQuizScoringPage extends StatefulWidget {
   const CreateQuizScoringPage({super.key});
@@ -8,128 +12,61 @@ class CreateQuizScoringPage extends StatefulWidget {
 }
 
 class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
-  // Mock data for UI testing
-  final List<Map<String, dynamic>> _mockQuestions = [
-    {
-      'id': 'q1',
-      'question': 'Hangi aktiviteyi daha çok seversiniz?',
-      'options': [
-        {'id': 'opt1', 'text': 'Kitap okuma'},
-        {'id': 'opt2', 'text': 'Resim yapma'},
-        {'id': 'opt3', 'text': 'Spor yapma'},
-        {'id': 'opt4', 'text': 'Müzik dinleme'},
-      ],
-    },
-    {
-      'id': 'q2',
-      'question': 'Sosyal ortamlarda nasıl davranırsınız?',
-      'options': [
-        {'id': 'opt1', 'text': 'Aktif olarak sohbete katılırım'},
-        {'id': 'opt2', 'text': 'Dinlemeyi tercih ederim'},
-        {'id': 'opt3', 'text': 'Liderlik yaparım'},
-        {'id': 'opt4', 'text': 'Sessizce gözlem yaparım'},
-      ],
-    },
-  ];
-
-  final List<Map<String, dynamic>> _mockResults = [
-    {'id': 'result1', 'title': 'Lider Tip', 'color': Colors.amber},
-    {'id': 'result2', 'title': 'Yaratıcı Tip', 'color': Colors.purple},
-    {'id': 'result3', 'title': 'Analist Tip', 'color': Colors.blue},
-    {'id': 'result4', 'title': 'Sosyal Tip', 'color': Colors.green},
-  ];
-
-  // Mock scoring data: questionId -> optionId -> resultId -> points
-  final Map<String, Map<String, Map<String, int>>> _mockScoring = {};
-
   void _updateScoring(
     String questionId,
     String optionId,
     String resultId,
     int points,
   ) {
-    setState(() {
-      _mockScoring[questionId] ??= {};
-      _mockScoring[questionId]![optionId] ??= {};
-      _mockScoring[questionId]![optionId]![resultId] = points;
-    });
-
-    // TODO: context.read<CreateQuizCubit>().updateScoring(questionId, optionId, resultId, points);
+    context.read<CreateQuizCubit>().updateScoring(
+      questionId,
+      optionId,
+      resultId,
+      points,
+    );
   }
 
   void _autoFillScoring() {
-    // Auto-fill example logic
-    setState(() {
-      for (var question in _mockQuestions) {
-        final questionId = question['id'];
-        _mockScoring[questionId] = {};
-
-        for (int i = 0; i < question['options'].length; i++) {
-          final optionId = question['options'][i]['id'];
-          _mockScoring[questionId]![optionId] = {};
-
-          // Simple auto-fill: give random points
-          for (int j = 0; j < _mockResults.length; j++) {
-            final resultId = _mockResults[j]['id'];
-            final points = (i == j)
-                ? 5
-                : (i == j + 1 || i == j - 1)
-                ? 2
-                : 0;
-            _mockScoring[questionId]![optionId]![resultId] = points;
-          }
-        }
-      }
-    });
-
-    // TODO: context.read<CreateQuizCubit>().autoFillScoring();
+    context.read<CreateQuizCubit>().autoFillScoring();
   }
 
   void _clearAllScoring() {
-    setState(() {
-      _mockScoring.clear();
-    });
-
-    // TODO: context.read<CreateQuizCubit>().clearAllScoring();
+    context.read<CreateQuizCubit>().clearAllScoring();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace with BlocBuilder<CreateQuizCubit, CreateQuizState>
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                _buildHeader(),
-                const SizedBox(height: 24),
+    return BlocBuilder<CreateQuizCubit, CreateQuizState>(
+      builder: (context, state) {
+        return Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 24),
+                    _buildQuickActions(),
+                    const SizedBox(height: 24),
+                    _buildBalanceOverview(state),
+                    const SizedBox(height: 24),
 
-                // Quick Actions
-                _buildQuickActions(),
-                const SizedBox(height: 24),
+                    // Questions List with real data
+                    ...state.questions.asMap().entries.map((entry) {
+                      return _buildQuestionCard(entry.value, entry.key, state);
+                    }),
 
-                // Balance Overview
-                _buildBalanceOverview(),
-                const SizedBox(height: 24),
-
-                // Questions List
-                ..._mockQuestions.map(
-                  (question) => _buildQuestionCard(question),
+                    const SizedBox(height: 32),
+                    _buildRequirementsCheck(state),
+                  ],
                 ),
-
-                const SizedBox(height: 32),
-
-                // Requirements Check
-                _buildRequirementsCheck(),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -197,8 +134,8 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
     );
   }
 
-  Widget _buildBalanceOverview() {
-    final totalPoints = _calculateTotalPoints();
+  Widget _buildBalanceOverview(CreateQuizState state) {
+    final totalPoints = _calculateTotalPoints(state);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -216,8 +153,8 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
           ),
           const SizedBox(height: 12),
           Row(
-            children: _mockResults.map((result) {
-              final resultPoints = _calculateResultPoints(result['id']);
+            children: state.results.map((result) {
+              final resultPoints = state.getTotalPointsForResult(result.id);
               final percentage = totalPoints > 0
                   ? (resultPoints / totalPoints) * 100
                   : 0;
@@ -227,19 +164,25 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (result['color'] as Color).withValues(alpha: 0.1),
+                    color: _hexToColor(
+                      result.colorValue,
+                    ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: result['color']),
+                    border: Border.all(color: _hexToColor(result.colorValue)),
                   ),
                   child: Column(
                     children: [
                       Text(
-                        result['title'],
+                        result.title.isEmpty
+                            ? 'Sonuç ${state.results.indexOf(result) + 1}'
+                            : result.title,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                         textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -252,7 +195,7 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: result['color'],
+                          color: _hexToColor(result.colorValue),
                         ),
                       ),
                     ],
@@ -266,11 +209,11 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
     );
   }
 
-  Widget _buildQuestionCard(Map<String, dynamic> question) {
-    final questionId = question['id'];
-    final questionText = question['question'];
-    final options = question['options'] as List;
-
+  Widget _buildQuestionCard(
+    QuizQuestionModel question,
+    int questionIndex,
+    CreateQuizState state,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -279,7 +222,6 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Question Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -287,7 +229,9 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                questionText,
+                question.questionText.isEmpty
+                    ? 'Soru ${questionIndex + 1}'
+                    : question.questionText,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -297,18 +241,32 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
             ),
             const SizedBox(height: 16),
 
-            // Options List
-            ...options.map((option) => _buildOptionScoring(questionId, option)),
+            ...question.options.asMap().entries.map((entry) {
+              final optionIndex = entry.key;
+              final optionText = entry.value;
+              final optionId = 'option_${questionIndex}_$optionIndex';
+
+              return _buildOptionScoring(
+                question.id,
+                optionId,
+                optionText,
+                optionIndex,
+                state,
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOptionScoring(String questionId, Map<String, dynamic> option) {
-    final optionId = option['id'];
-    final optionText = option['text'];
-
+  Widget _buildOptionScoring(
+    String questionId,
+    String optionId,
+    String optionText,
+    int optionIndex,
+    CreateQuizState state,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -322,26 +280,28 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            optionText,
+            optionText.isEmpty
+                ? 'Seçenek ${String.fromCharCode(65 + optionIndex)}'
+                : optionText,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 12),
 
-          // Results Scoring
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _mockResults.map((result) {
-              final resultId = result['id'];
-              final currentPoints =
-                  _mockScoring[questionId]?[optionId]?[resultId] ?? 0;
+            children: state.results.map((result) {
+              final scoring = state.getScoringForOption(questionId, optionId);
+              final currentPoints = scoring?.getPointsForResult(result.id) ?? 0;
 
               return _buildResultScoring(
                 questionId,
                 optionId,
-                resultId,
-                result['title'],
-                result['color'],
+                result.id,
+                result.title.isEmpty
+                    ? 'Sonuç ${state.results.indexOf(result) + 1}'
+                    : result.title,
+                _hexToColor(result.colorValue),
                 currentPoints,
               );
             }).toList(),
@@ -360,7 +320,6 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
     int currentPoints,
   ) {
     return Container(
-      // width: 120,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: resultColor.withValues(alpha: 0.1),
@@ -380,7 +339,6 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
           ),
           const SizedBox(height: 8),
 
-          // Point Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(6, (index) {
@@ -399,7 +357,7 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
                     shape: BoxShape.circle,
                   ),
                   child: isSelected
-                      ? Icon(Icons.check, size: 10, color: Colors.white)
+                      ? const Icon(Icons.check, size: 10, color: Colors.white)
                       : null,
                 ),
               );
@@ -415,10 +373,10 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
     );
   }
 
-  Widget _buildRequirementsCheck() {
-    final isComplete = _validateScoring();
-    final totalQuestions = _mockQuestions.length;
-    final completedQuestions = _getCompletedQuestionsCount();
+  Widget _buildRequirementsCheck(CreateQuizState state) {
+    final isComplete = _validateScoring(state);
+    final totalQuestions = state.questions.length;
+    final completedQuestions = _getCompletedQuestionsCount(state);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -457,9 +415,9 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
           ),
           _buildRequirementItem(
             'Her sonuç en az bir puan almış',
-            _allResultsHavePoints(),
+            _allResultsHavePoints(state),
           ),
-          _buildRequirementItem('Puan dağılımı dengeli', _isBalanced()),
+          _buildRequirementItem('Puan dağılımı dengeli', _isBalanced(state)),
         ],
       ),
     );
@@ -488,78 +446,72 @@ class _CreateQuizScoringPageState extends State<CreateQuizScoringPage> {
     );
   }
 
-  // Helper methods for validation
-  bool _validateScoring() {
-    return _getCompletedQuestionsCount() == _mockQuestions.length &&
-        _allResultsHavePoints() &&
-        _isBalanced();
+  // Helper methods
+  Color _hexToColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  int _getCompletedQuestionsCount() {
+  bool _validateScoring(CreateQuizState state) {
+    return _getCompletedQuestionsCount(state) == state.questions.length &&
+        _allResultsHavePoints(state) &&
+        _isBalanced(state);
+  }
+
+  int _getCompletedQuestionsCount(CreateQuizState state) {
     int count = 0;
-    for (var question in _mockQuestions) {
-      final questionId = question['id'];
-      if (_mockScoring[questionId] != null) {
-        bool questionComplete = true;
-        for (var option in question['options']) {
-          final optionId = option['id'];
-          if (_mockScoring[questionId]![optionId] == null ||
-              _mockScoring[questionId]![optionId]!.isEmpty) {
-            questionComplete = false;
-            break;
-          }
+    for (int i = 0; i < state.questions.length; i++) {
+      final question = state.questions[i];
+      bool questionComplete = true;
+
+      for (int j = 0; j < question.options.length; j++) {
+        final optionId = 'option_${i}_$j';
+        final scoring = state.getScoringForOption(question.id, optionId);
+
+        if (scoring == null || scoring.resultPoints.isEmpty) {
+          questionComplete = false;
+          break;
         }
-        if (questionComplete) count++;
       }
+
+      if (questionComplete) count++;
     }
     return count;
   }
 
-  bool _allResultsHavePoints() {
-    for (var result in _mockResults) {
-      final resultId = result['id'];
-      if (_calculateResultPoints(resultId) == 0) {
+  bool _allResultsHavePoints(CreateQuizState state) {
+    for (var result in state.results) {
+      if (state.getTotalPointsForResult(result.id) == 0) {
         return false;
       }
     }
     return true;
   }
 
-  bool _isBalanced() {
-    final totalPoints = _calculateTotalPoints();
+  bool _isBalanced(CreateQuizState state) {
+    final totalPoints = _calculateTotalPoints(state);
     if (totalPoints == 0) return false;
 
-    final averagePoints = totalPoints / _mockResults.length;
-    for (var result in _mockResults) {
-      final resultPoints = _calculateResultPoints(result['id']);
+    final averagePoints = totalPoints / state.results.length;
+    for (var result in state.results) {
+      final resultPoints = state.getTotalPointsForResult(result.id);
       final difference = (resultPoints - averagePoints).abs();
       if (difference > averagePoints * 0.5) {
-        // 50% tolerance
         return false;
       }
     }
     return true;
   }
 
-  int _calculateTotalPoints() {
-    int total = 0;
-    _mockScoring.forEach((questionId, questionScoring) {
-      questionScoring.forEach((optionId, optionScoring) {
-        optionScoring.forEach((resultId, points) {
-          total += points;
-        });
-      });
+  int _calculateTotalPoints(CreateQuizState state) {
+    return state.scoring.fold<int>(0, (total, scoring) {
+      return total +
+          scoring.resultPoints.values.fold<int>(
+            0,
+            (sum, points) => sum + points,
+          );
     });
-    return total;
-  }
-
-  int _calculateResultPoints(String resultId) {
-    int total = 0;
-    _mockScoring.forEach((questionId, questionScoring) {
-      questionScoring.forEach((optionId, optionScoring) {
-        total += optionScoring[resultId] ?? 0;
-      });
-    });
-    return total;
   }
 }

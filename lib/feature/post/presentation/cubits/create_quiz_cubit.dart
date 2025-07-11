@@ -2,10 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
-  // ✅ Constructor'ı düzelt
   CreateQuizCubit()
     : super(
         CreateQuizState(
@@ -18,8 +18,6 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
           ],
         ),
       );
-
-  // --- Event Metotları (UI'dan çağrılacak) ---
 
   int get step => state.step;
   bool get hasTimeLimit => state.hasTimeLimit;
@@ -46,7 +44,6 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   // Soru yönetimi
-  // ✅ addQuestion method'unu düzelt
   void addQuestion() {
     final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
       ..add(
@@ -119,11 +116,9 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   // --- Doğrulama Mantığı ---
-
-  // ✅ Navigation with validation
   void nextStep() {
     if (!validateCurrentStep()) {
-      return; // Validation error - state'te zaten error var
+      return;
     }
 
     if (state.step < 4) {
@@ -240,7 +235,6 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     return true;
   }
 
-  // Step 2 validation
   bool validateStep3() {
     final hasEnoughResults = state.results.length >= 2;
     final hasValidResults = state.results.every(
@@ -334,5 +328,92 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
       );
       addResult(duplicate);
     }
+  }
+
+  //Scoring Management Methods
+  void updateScoring(
+    String questionId,
+    String optionId,
+    String resultId,
+    int points,
+  ) {
+    final updatedScoring = List<QuizScoringModel>.from(state.scoring);
+
+    // Find existing scoring or create new one
+    final existingIndex = updatedScoring.indexWhere(
+      (s) => s.questionId == questionId && s.optionId == optionId,
+    );
+
+    if (existingIndex != -1) {
+      // Update existing scoring
+      final existing = updatedScoring[existingIndex];
+      final updatedResultPoints = Map<String, int>.from(existing.resultPoints);
+      updatedResultPoints[resultId] = points;
+
+      updatedScoring[existingIndex] = QuizScoringModel(
+        questionId: existing.questionId,
+        optionId: existing.optionId,
+        resultPoints: updatedResultPoints,
+      );
+    } else {
+      // Create new scoring
+      final newScoring = QuizScoringModel(
+        questionId: questionId,
+        optionId: optionId,
+        resultPoints: {resultId: points},
+      );
+      updatedScoring.add(newScoring);
+    }
+
+    emit(state.copyWith(scoring: updatedScoring));
+  }
+
+  void autoFillScoring() {
+    final updatedScoring = <QuizScoringModel>[];
+
+    for (int qIndex = 0; qIndex < state.questions.length; qIndex++) {
+      final question = state.questions[qIndex];
+
+      for (int oIndex = 0; oIndex < question.options.length; oIndex++) {
+        final optionId = 'option_${qIndex}_$oIndex'; // Option ID pattern
+        final resultPoints = <String, int>{};
+
+        // Simple auto-fill logic: diagonal pattern
+        for (int rIndex = 0; rIndex < state.results.length; rIndex++) {
+          final resultId = state.results[rIndex].id;
+
+          // Give higher points to matching indices, lower to adjacent
+          final points = (oIndex == rIndex)
+              ? 5
+              : (oIndex == rIndex + 1 || oIndex == rIndex - 1)
+              ? 2
+              : 0;
+
+          resultPoints[resultId] = points;
+        }
+
+        final scoring = QuizScoringModel(
+          questionId: question.id,
+          optionId: optionId,
+          resultPoints: resultPoints,
+        );
+
+        updatedScoring.add(scoring);
+      }
+    }
+
+    emit(state.copyWith(scoring: updatedScoring));
+  }
+
+  void clearAllScoring() {
+    emit(state.copyWith(scoring: []));
+  }
+
+  void clearQuestionScoring(String questionId) {
+    final updatedScoring = state.scoring
+        .where((s) => s.questionId != questionId)
+        .toList();
+
+    emit(state.copyWith(scoring: updatedScoring));
   }
 }

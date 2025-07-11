@@ -7,13 +7,11 @@ import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/qu
 class QuizOptionsList extends StatelessWidget {
   final QuizQuestionModel question;
   final int questionIndex;
-  final VoidCallback onOptionsChanged;
 
   const QuizOptionsList({
     super.key,
     required this.question,
     required this.questionIndex,
-    required this.onOptionsChanged,
   });
 
   @override
@@ -46,7 +44,6 @@ class QuizOptionsList extends StatelessWidget {
                 questionIndex,
                 index,
               );
-              onOptionsChanged();
             },
           );
         }),
@@ -55,7 +52,6 @@ class QuizOptionsList extends StatelessWidget {
         TextButton.icon(
           onPressed: () {
             context.read<CreateQuizCubit>().addOption(questionIndex);
-            onOptionsChanged();
           },
           icon: const Icon(Icons.add_circle),
           label: const Text('Seçenek Ekle'),

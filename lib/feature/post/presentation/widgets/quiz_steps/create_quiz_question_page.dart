@@ -14,6 +14,7 @@ class CreateQuizQuestionPage extends StatefulWidget {
 
 class _CreateQuizQuestionPageState extends State<CreateQuizQuestionPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CreateQuizCubit, CreateQuizState>(
@@ -50,13 +51,6 @@ class _CreateQuizQuestionPageState extends State<CreateQuizQuestionPage> {
                               context
                                   .read<CreateQuizCubit>()
                                   .updateQuestionText(index, value);
-                            },
-                            onOptionsChanged: () {
-                              // Notify the cubit that options have changed
-                              // context.read<CreateQuizCubit>().updateOptions(
-                              //       index,
-                              //       state.questions[index].options,
-                              //     );
                             },
                           ),
                         );

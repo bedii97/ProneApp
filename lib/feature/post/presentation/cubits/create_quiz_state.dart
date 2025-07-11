@@ -71,4 +71,22 @@ class CreateQuizState {
       scoring: scoring ?? this.scoring,
     );
   }
+
+  QuizScoringModel? getScoringForOption(String questionId, String optionId) {
+    try {
+      return scoring.firstWhere(
+        (s) => s.questionId == questionId && s.optionId == optionId,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  int getTotalPointsForResult(String resultId) {
+    int total = 0;
+    for (var scoring in this.scoring) {
+      total += scoring.resultPoints[resultId] ?? 0;
+    }
+    return total;
+  }
 }

@@ -117,7 +117,7 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   void _previousStep() {
     final cubit = context.read<CreateQuizCubit>();
     if (cubit.step > 0) {
-      setState(() => cubit.previousStep());
+      cubit.previousStep();
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,

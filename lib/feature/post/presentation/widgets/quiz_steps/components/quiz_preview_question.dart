@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 
 class QuizPreviewQuestion extends StatelessWidget {
-  final Map<String, dynamic> question;
+  final QuizQuestionModel question;
   final int questionNumber;
   final int? selectedAnswer;
   final Function(int) onAnswerSelected;
@@ -16,9 +17,6 @@ class QuizPreviewQuestion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final questionText = question['questionText'] as String;
-    final options = question['options'] as List<String>;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -32,7 +30,7 @@ class QuizPreviewQuestion extends StatelessWidget {
             border: Border.all(color: Colors.blue[200]!),
           ),
           child: Text(
-            questionText,
+            question.questionText,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -43,7 +41,7 @@ class QuizPreviewQuestion extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Options
-        ...options.asMap().entries.map((entry) {
+        ...question.options.asMap().entries.map((entry) {
           final option = entry.value;
 
           return Padding(
@@ -76,7 +74,7 @@ class QuizPreviewQuestion extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

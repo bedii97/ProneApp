@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_question_card.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/components.dart';
 
-class CreateQuizQuestionScreen extends StatefulWidget {
+class CreateQuizQuestionPage extends StatefulWidget {
   // final GlobalKey<FormState> formKey;
-  const CreateQuizQuestionScreen({super.key});
+  const CreateQuizQuestionPage({super.key});
 
   @override
-  State<CreateQuizQuestionScreen> createState() =>
-      _CreateQuizQuestionScreenState();
+  State<CreateQuizQuestionPage> createState() => _CreateQuizQuestionPageState();
 }
 
-class _CreateQuizQuestionScreenState extends State<CreateQuizQuestionScreen> {
+class _CreateQuizQuestionPageState extends State<CreateQuizQuestionPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CreateQuizCubit, CreateQuizState>(
@@ -51,9 +51,6 @@ class _CreateQuizQuestionScreenState extends State<CreateQuizQuestionScreen> {
                               context
                                   .read<CreateQuizCubit>()
                                   .updateQuestionText(index, value);
-                            },
-                            onOptionsChanged: () {
-                              setState(() {}); // UI'ı yenile
                             },
                           ),
                         );

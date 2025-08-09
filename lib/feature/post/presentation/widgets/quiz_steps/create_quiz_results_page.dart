@@ -1,15 +1,16 @@
+/// Renk ekliyordum
+/// Yeni sonuç ekle buttonunda renk okey oldu
+/// Ama sonuç kartında renkler hala eski
+/// Onu da halledeceğim
+library;
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_result_card.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_add_button.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_empty_state.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_header.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_requirements.dart';
-import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_results_templates.dart';
+import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/components.dart';
 
 class CreateQuizResultsPage extends StatefulWidget {
   const CreateQuizResultsPage({super.key});
@@ -35,22 +36,33 @@ class _CreateQuizResultsPageState extends State<CreateQuizResultsPage> {
     'celebration',
   ];
 
-  void _addResult() {
-    //Create a new result with random icon
+  final List<String> _availableColors = [
+    '#FFCDD2', // Red
+    '#C5CAE9', // Blue
+    '#C8E6C9', // Green
+    '#FFF9C4', // Yellow
+    '#FFAB91', // Orange
+    '#B39DDB', // Purple
+    '#B2DFDB', // Teal
+    '#FFECB3', // Light Yellow
+  ];
+
+  void _addResult({String? title, String? description}) {
+    //Create a new result with random icon and color
     Random rnd = Random();
     final result = QuizResultModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: '',
-      description: '',
+      title: title ?? '',
+      description: description ?? '',
       icon: _availableIcons[rnd.nextInt(_availableIcons.length)],
-      colorValue: '#FFFFFF', // Default color
+      colorValue: _availableColors[rnd.nextInt(_availableColors.length)],
     );
 
     context.read<CreateQuizCubit>().addResult(result);
   }
 
   void _addResultFromTemplate(Map<String, dynamic> template) {
-    context.read<CreateQuizCubit>().addResultFromTemplate(template);
+    // context.read<CreateQuizCubit>().addResultFromTemplate(template);
   }
 
   void _removeResult(int index) {

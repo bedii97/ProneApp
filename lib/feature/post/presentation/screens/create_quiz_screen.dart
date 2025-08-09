@@ -49,6 +49,12 @@ class _CreateQuizViewState extends State<CreateQuizView> {
     ];
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _nextStep() {
     final cubit = context.read<CreateQuizCubit>();
 
@@ -69,15 +75,37 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   }
 
   void _showValidationErrors(Map<String, String> errors) {
+    if (errors.isEmpty) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: errors.values.map((error) => Text('• $error')).toList(),
+          children: [
+            const Text(
+              'Lütfen aşağıdaki hataları düzeltin:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...errors.values.map(
+              (error) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• $error'),
+              ),
+            ),
+          ],
         ),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
         // behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'Tamam',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
       ),
     );
   }
@@ -125,9 +153,9 @@ class _CreateQuizViewState extends State<CreateQuizView> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.watch<CreateQuizCubit>();
     return PopScope(
       canPop: false,
+      // PopScope ve AppBar kısımları Cubit'in state'ine bağlı olmadığı için burada kalabilir.
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
 
@@ -152,30 +180,34 @@ class _CreateQuizViewState extends State<CreateQuizView> {
         ),
         body: Column(
           children: [
-            // Shared Progress Indicator
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Adım ${cubit.step + 1}/5: ${_stepTitles[cubit.step]}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
+            // Sadece Progress Indicator kısmı BlocBuilder ile sarıldı.
+            BlocBuilder<CreateQuizCubit, CreateQuizState>(
+              builder: (context, state) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Adım ${state.step + 1}/5: ${_stepTitles[state.step]}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: (state.step + 1) / 5,
+                        backgroundColor: Colors.grey[300],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: (cubit.step + 1) / 5,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
 
-            // Page Content
+            // PageView kısmı Cubit state'ine bağlı değil, direkt kullanılıyor.
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -184,52 +216,56 @@ class _CreateQuizViewState extends State<CreateQuizView> {
               ),
             ),
 
-            // Shared Bottom Navigation
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.2),
-                    spreadRadius: 1,
-                    blurRadius: 4,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  if (cubit.step > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousStep,
-                        child: const Text('Geri'),
+            // Sadece Bottom Navigation kısmı BlocBuilder ile sarıldı.
+            BlocBuilder<CreateQuizCubit, CreateQuizState>(
+              builder: (context, state) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withAlpha(50),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
                       ),
-                    ),
-                  if (cubit.step > 0) const SizedBox(width: 16),
-                  if (cubit.step == 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final shouldExit =
-                              await _showExitConfirmationDialog();
-                          if (shouldExit && mounted) {
-                            context.pop();
-                          }
-                        },
-                        child: const Text('İptal'),
-                      ),
-                    ),
-                  if (cubit.step == 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: cubit.step == 4 ? _publishQuiz : _nextStep,
-                      child: Text(cubit.step == 4 ? 'Yayınla' : 'İleri'),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      if (state.step > 0)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _previousStep,
+                            child: const Text('Geri'),
+                          ),
+                        ),
+                      if (state.step > 0) const SizedBox(width: 16),
+                      if (state.step == 0)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              final shouldExit =
+                                  await _showExitConfirmationDialog();
+                              if (shouldExit && mounted) {
+                                context.pop();
+                              }
+                            },
+                            child: const Text('İptal'),
+                          ),
+                        ),
+                      if (state.step == 0) const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: state.step == 4 ? _publishQuiz : _nextStep,
+                          child: Text(state.step == 4 ? 'Yayınla' : 'İleri'),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

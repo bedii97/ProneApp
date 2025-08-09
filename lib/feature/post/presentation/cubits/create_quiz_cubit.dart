@@ -136,15 +136,15 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   bool validateCurrentStep() {
     switch (state.step) {
       case 0:
-        return validateStep1();
+        return validateStep1(); // Basic Info
       case 1:
-        return validateStep2();
+        return validateStep2(); // Questions
       case 2:
-        return validateStep3();
+        return validateStep3(); // Results
       case 3:
-      // return validateStep4(); // Scoring
+        return validateStep4(); // Scoring
       case 4:
-      // return validateStep5(); // Preview
+        return validateStep5(); // Preview
       default:
         return true;
     }
@@ -257,6 +257,42 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     }
 
     emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
+    return true;
+  }
+
+  bool validateStep4() {
+    // Scoring validation
+    final errors = <String, String>{};
+
+    // Her soru için scoring kontrol et
+    for (int i = 0; i < state.questions.length; i++) {
+      final question = state.questions[i];
+      bool hasScoring = false;
+
+      for (final scoring in state.scoring) {
+        if (scoring.questionId == question.id) {
+          hasScoring = true;
+          break;
+        }
+      }
+
+      if (!hasScoring) {
+        errors['scoring_$i'] = 'Soru ${i + 1} için puan sistemi tanımlanmamış';
+      }
+    }
+
+    if (errors.isNotEmpty) {
+      emit(
+        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  bool validateStep5() {
+    // Preview için özel validation gerekirse
     return true;
   }
 

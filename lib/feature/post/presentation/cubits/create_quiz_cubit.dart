@@ -43,16 +43,21 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     emit(state.copyWith(expiresAt: value));
   }
 
+  String _generateUniqueId() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = (timestamp * 997) % 1000000; // Simple hash
+    return '${timestamp}_$random';
+  }
+
   // Soru yönetimi
   void addQuestion() {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
-      ..add(
-        QuizQuestionModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(), // ✅ ID ekle
-          questionText: '',
-          options: ['', ''], // ✅ En az 2 boş seçenek
-        ),
-      );
+    final newQuestion = QuizQuestionModel(
+      id: _generateUniqueId(),
+      questionText: '',
+      options: ['', ''],
+    );
+
+    final updatedQuestions = [...state.questions, newQuestion];
     emit(state.copyWith(questions: updatedQuestions));
   }
 
@@ -148,6 +153,14 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
       default:
         return true;
     }
+  }
+
+  bool _validateAllSteps() {
+    return validateStep1() &&
+        validateStep2() &&
+        validateStep3() &&
+        validateStep4() &&
+        validateStep5();
   }
 
   bool validateStep1() {
@@ -297,7 +310,7 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   }
 
   Future<void> publishQuiz() async {
-    if (!validateStep1() || !validateStep2()) {
+    if (!_validateAllSteps()) {
       emit(
         state.copyWith(
           status: FormStatus.submissionFailure,

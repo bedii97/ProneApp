@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 
 class QuizPreviewDialog extends StatelessWidget {
-  final Map<String, dynamic> result;
+  final QuizResultModel result;
 
   const QuizPreviewDialog({super.key, required this.result});
 
@@ -20,14 +21,11 @@ class QuizPreviewDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            result['title'] as String,
+            result.title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            result['description'] as String,
-            style: const TextStyle(fontSize: 16),
-          ),
+          Text(result.description, style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
@@ -52,7 +50,7 @@ class QuizPreviewDialog extends StatelessWidget {
     );
   }
 
-  static void show(BuildContext context, Map<String, dynamic> result) {
+  static void show(BuildContext context, QuizResultModel result) {
     showDialog(
       context: context,
       builder: (context) => QuizPreviewDialog(result: result),

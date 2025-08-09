@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 
 class QuizPreviewResults extends StatelessWidget {
-  final List<dynamic> results;
+  final List<QuizResultModel> results;
 
   const QuizPreviewResults({super.key, required this.results});
 
@@ -26,14 +27,14 @@ class QuizPreviewResults extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            ...results.map((result) => _buildResultCard(result)).toList(),
+            ...results.map((result) => _buildResultCard(result)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildResultCard(Map<String, dynamic> result) {
+  Widget _buildResultCard(QuizResultModel result) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -51,7 +52,7 @@ class QuizPreviewResults extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              _getIconData(result['icon'] as String),
+              _getIconData(result.icon),
               color: Colors.blue[700],
               size: 24,
             ),
@@ -62,7 +63,7 @@ class QuizPreviewResults extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  result['title'] as String,
+                  result.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -70,7 +71,7 @@ class QuizPreviewResults extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  result['description'] as String,
+                  result.description,
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

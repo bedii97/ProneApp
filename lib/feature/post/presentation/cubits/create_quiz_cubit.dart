@@ -1,12 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
+import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
+import 'package:prone/feature/post/domain/repos/post_repo.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
-  CreateQuizCubit()
+  final PostRepo _postRepo;
+
+  CreateQuizCubit(this._postRepo)
     : super(
         CreateQuizState(
           questions: [
@@ -322,8 +326,18 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
 
     emit(state.copyWith(status: FormStatus.submissionInProgress));
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      emit(state.copyWith(status: FormStatus.submissionSuccess));
+      // CreateQuizModel oluştur
+      final createQuizModel = _buildCreateQuizModel();
+
+      // Repository üzerinden quiz'i oluştur
+      final createdQuiz = await _postRepo.createQuiz(quiz: createQuizModel);
+
+      emit(
+        state.copyWith(
+          status: FormStatus.submissionSuccess,
+          createdQuiz: createdQuiz,
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -332,6 +346,97 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
         ),
       );
     }
+  }
+
+  CreateQuizModel _buildCreateQuizModel() {
+    // Questions'ları dönüştür
+    final questions = state.questions
+        .map((question) {
+          // Her seçenek için scoring'den point'leri al
+          final options = <CreateQuizOption>[];
+
+          for (
+            int optionIndex = 0;
+            optionIndex < question.options.length;
+            optionIndex++
+          ) {
+            final optionText = question.options[optionIndex];
+
+            final optionId =
+                'option_${state.questions.indexOf(question)}_$optionIndex';
+
+            // Bu seçenek için tüm result'lara verilen point'leri bul
+            final points = <String, int>{};
+            for (final scoring in state.scoring) {
+              if (scoring.questionId == question.id &&
+                  scoring.optionId == optionId) {
+                points.addAll(scoring.resultPoints);
+                break;
+              }
+            }
+
+            // Result ID'lerini title'lara dönüştür
+            final resultPoints = <String, int>{};
+            for (final result in state.results) {
+              final pointValue = points[result.id] ?? 0;
+              resultPoints[result.title] = pointValue;
+            }
+
+            options.add(
+              CreateQuizOption(text: optionText.trim(), points: resultPoints),
+            );
+          }
+
+          return CreateQuizQuestion(
+            text: question.questionText.trim(),
+            options: options,
+          );
+        })
+        .where((q) {
+          final hasOptions = q.options.isNotEmpty;
+          return hasOptions;
+        })
+        .toList();
+
+    // Results'ları dönüştür
+    final List<CreateQuizResult> results = state.results.map((result) {
+      return CreateQuizResult(
+        title: result.title.trim(),
+        description: result.description.trim(),
+        // imageUrl: result.imageUrl?.trim(),
+      );
+    }).toList();
+
+    final model = CreateQuizModel(
+      title: state.title.trim(),
+      body: state.description.trim().isEmpty ? null : state.description.trim(),
+      // questions: questions,
+      // results: results,
+      questions: questions
+          .map(
+            (q) => QuizQuestionInput(
+              text: q.text,
+              options: q.options
+                  .map((o) => QuizOptionInput(text: o.text, points: o.points))
+                  .toList(),
+            ),
+          )
+          .toList(),
+      results: <QuizResultInput>[
+        for (final result in results)
+          QuizResultInput(
+            title: result.title,
+            description: result.description,
+            // imageUrl: result.imageUrl,
+          ),
+      ],
+      allowMultipleAnswers: false,
+      allowAddingOptions: false,
+      showResultsBeforeVoting: false,
+      expiresAt: state.hasTimeLimit ? state.expiresAt : null,
+    );
+
+    return model;
   }
 
   //Quiz Results Management

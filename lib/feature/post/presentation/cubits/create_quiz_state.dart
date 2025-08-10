@@ -1,3 +1,4 @@
+import 'package:prone/feature/post/domain/models/quiz_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
@@ -30,6 +31,8 @@ class CreateQuizState {
   final String? errorMessage;
   final Map<String, String> validationErrors;
 
+  final QuizModel? createdQuiz;
+
   const CreateQuizState({
     this.step = 0,
     this.title = '',
@@ -42,6 +45,7 @@ class CreateQuizState {
     this.validationErrors = const {},
     this.results = const [],
     this.scoring = const [],
+    this.createdQuiz,
   });
 
   CreateQuizState copyWith({
@@ -56,6 +60,7 @@ class CreateQuizState {
     Map<String, String>? validationErrors,
     List<QuizResultModel>? results,
     List<QuizScoringModel>? scoring,
+    QuizModel? createdQuiz,
   }) {
     return CreateQuizState(
       step: step ?? this.step,
@@ -69,6 +74,7 @@ class CreateQuizState {
       validationErrors: validationErrors ?? this.validationErrors,
       results: results ?? this.results,
       scoring: scoring ?? this.scoring,
+      createdQuiz: createdQuiz ?? this.createdQuiz,
     );
   }
 

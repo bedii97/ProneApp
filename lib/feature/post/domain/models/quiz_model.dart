@@ -35,37 +35,60 @@ class QuizModel extends PostModel {
   }) : super(type: PostType.quiz);
 
   factory QuizModel.fromJson(Map<String, dynamic> json) {
-    return QuizModel(
-      id: json['id'] as String?,
-      title: json['title'] as String,
-      body: json['body'] as String?,
-      imageUrls: json['image_urls'] != null
-          ? List<String>.from(json['image_urls'] as List)
-          : null,
-      userId: json['user_id'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      status: PostStatus.values.firstWhere(
-        (e) => e.name == (json['status'] as String? ?? 'draft'),
-        orElse: () => PostStatus.draft,
-      ),
-      description: json['description'] as String?,
-      questions: (json['questions'] as List<dynamic>)
-          .map((q) => QuizQuestionModel.fromJson(q as Map<String, dynamic>))
-          .toList(),
-      results: (json['results'] as List<dynamic>)
-          .map((r) => QuizResultModel.fromJson(r as Map<String, dynamic>))
-          .toList(),
-      scoring: (json['scoring'] as List<dynamic>)
-          .map((s) => QuizScoringModel.fromJson(s as Map<String, dynamic>))
-          .toList(),
-      hasTimeLimit: json['has_time_limit'] as bool? ?? false,
-      expiresAt: json['expires_at'] != null
-          ? DateTime.parse(json['expires_at'] as String)
-          : null,
-      totalParticipants: json['total_participants'] as int? ?? 0,
-      userParticipated: json['user_participated'] as bool? ?? false,
-      userResultId: json['user_result_id'] as String?,
-    );
+    try {
+      final questionsJson = json['quiz_questions'] as List<dynamic>?;
+      final resultsJson = json['quiz_results'] as List<dynamic>?;
+      final scoringJson = json['scoring'] as List<dynamic>?; // ✅ Null olabilir
+
+      return QuizModel(
+        id: json['id'] as String?,
+        title: json['title'] as String,
+        body: json['body'] as String?,
+        imageUrls: json['image_urls'] != null
+            ? List<String>.from(json['image_urls'] as List)
+            : null,
+        userId: json['user_id'] as String,
+        createdAt: DateTime.parse(json['created_at'] as String),
+        status: PostStatus.values.firstWhere(
+          (e) => e.name == (json['status'] as String? ?? 'draft'),
+          orElse: () => PostStatus.draft,
+        ),
+        description: json['description'] as String?,
+        questions: questionsJson != null
+            ? questionsJson
+                  .map(
+                    (q) =>
+                        QuizQuestionModel.fromJson(q as Map<String, dynamic>),
+                  )
+                  .toList()
+            : <QuizQuestionModel>[],
+        results: resultsJson != null
+            ? resultsJson
+                  .map(
+                    (r) => QuizResultModel.fromJson(r as Map<String, dynamic>),
+                  )
+                  .toList()
+            : <QuizResultModel>[],
+        scoring:
+            scoringJson !=
+                null // ✅ Null check eklendi
+            ? scoringJson
+                  .map(
+                    (s) => QuizScoringModel.fromJson(s as Map<String, dynamic>),
+                  )
+                  .toList()
+            : <QuizScoringModel>[], // ✅ Boş liste
+        hasTimeLimit: json['has_time_limit'] as bool? ?? false,
+        expiresAt: json['expires_at'] != null
+            ? DateTime.parse(json['expires_at'] as String)
+            : null,
+        totalParticipants: json['total_participants'] as int? ?? 0,
+        userParticipated: json['user_participated'] as bool? ?? false,
+        userResultId: json['user_result_id'] as String?,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // Factory from CreateQuizState

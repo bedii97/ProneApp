@@ -21,17 +21,31 @@ class QuizQuestionModel {
     );
   }
 
-  // ✅ toJson metodu
   Map<String, dynamic> toJson() {
     return {'id': id, 'questionText': questionText, 'options': options};
   }
 
-  // ✅ fromJson metodu
   factory QuizQuestionModel.fromJson(Map<String, dynamic> json) {
-    return QuizQuestionModel(
-      id: json['id'] as String,
-      questionText: json['questionText'] as String,
-      options: List<String>.from(json['options'] as List),
-    );
+    try {
+      final optionsJson = json['quiz_options'] as List<dynamic>?;
+
+      return QuizQuestionModel(
+        id: json['id'] as String,
+        questionText:
+            json['question_text'] as String, // ✅ snake_case'e değiştirildi
+        options: optionsJson != null
+            ? optionsJson.map((option) {
+                // quiz_options içindeki her option bir Map<String, dynamic>
+                if (option is Map<String, dynamic>) {
+                  return option['option_text']
+                      as String; // ✅ option_text field'ını al
+                }
+                return option.toString();
+              }).toList()
+            : <String>[],
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

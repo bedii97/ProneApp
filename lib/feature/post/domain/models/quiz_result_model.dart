@@ -29,7 +29,6 @@ class QuizResultModel {
     );
   }
 
-  // ✅ toJson metodu
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -40,14 +39,19 @@ class QuizResultModel {
     };
   }
 
-  // ✅ fromJson metodu
   factory QuizResultModel.fromJson(Map<String, dynamic> json) {
-    return QuizResultModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      icon: json['icon'] as String,
-      colorValue: json['colorValue'] as String,
-    );
+    try {
+      return QuizResultModel(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        description: json['description'] as String? ?? '',
+        icon: json['icon'] as String? ?? 'emoji_events', // ✅ Default value
+        colorValue:
+            json['color_value'] as String? ??
+            '#FFFFFF', // ✅ Default value, snake_case
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

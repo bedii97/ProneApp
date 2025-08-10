@@ -1,12 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/utils/quiz_validator.dart';
+import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
+import 'package:prone/feature/post/domain/repos/post_repo.dart';
 import 'create_quiz_state.dart';
 
 class CreateQuizCubit extends Cubit<CreateQuizState> {
-  CreateQuizCubit()
+  final PostRepo _postRepo;
+
+  CreateQuizCubit(this._postRepo)
     : super(
         CreateQuizState(
           questions: [
@@ -43,16 +47,21 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     emit(state.copyWith(expiresAt: value));
   }
 
+  String _generateUniqueId() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = (timestamp * 997) % 1000000; // Simple hash
+    return '${timestamp}_$random';
+  }
+
   // Soru yönetimi
   void addQuestion() {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
-      ..add(
-        QuizQuestionModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(), // ✅ ID ekle
-          questionText: '',
-          options: ['', ''], // ✅ En az 2 boş seçenek
-        ),
-      );
+    final newQuestion = QuizQuestionModel(
+      id: _generateUniqueId(),
+      questionText: '',
+      options: ['', ''],
+    );
+
+    final updatedQuestions = [...state.questions, newQuestion];
     emit(state.copyWith(questions: updatedQuestions));
   }
 
@@ -136,18 +145,26 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
   bool validateCurrentStep() {
     switch (state.step) {
       case 0:
-        return validateStep1();
+        return validateStep1(); // Basic Info
       case 1:
-        return validateStep2();
+        return validateStep2(); // Questions
       case 2:
-        return validateStep3();
+        return validateStep3(); // Results
       case 3:
-      // return validateStep4(); // Scoring
+        return validateStep4(); // Scoring
       case 4:
-      // return validateStep5(); // Preview
+        return validateStep5(); // Preview
       default:
         return true;
     }
+  }
+
+  bool _validateAllSteps() {
+    return validateStep1() &&
+        validateStep2() &&
+        validateStep3() &&
+        validateStep4() &&
+        validateStep5();
   }
 
   bool validateStep1() {
@@ -260,8 +277,44 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     return true;
   }
 
+  bool validateStep4() {
+    // Scoring validation
+    final errors = <String, String>{};
+
+    // Her soru için scoring kontrol et
+    for (int i = 0; i < state.questions.length; i++) {
+      final question = state.questions[i];
+      bool hasScoring = false;
+
+      for (final scoring in state.scoring) {
+        if (scoring.questionId == question.id) {
+          hasScoring = true;
+          break;
+        }
+      }
+
+      if (!hasScoring) {
+        errors['scoring_$i'] = 'Soru ${i + 1} için puan sistemi tanımlanmamış';
+      }
+    }
+
+    if (errors.isNotEmpty) {
+      emit(
+        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  bool validateStep5() {
+    // Preview için özel validation gerekirse
+    return true;
+  }
+
   Future<void> publishQuiz() async {
-    if (!validateStep1() || !validateStep2()) {
+    if (!_validateAllSteps()) {
       emit(
         state.copyWith(
           status: FormStatus.submissionFailure,
@@ -273,8 +326,18 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
 
     emit(state.copyWith(status: FormStatus.submissionInProgress));
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      emit(state.copyWith(status: FormStatus.submissionSuccess));
+      // CreateQuizModel oluştur
+      final createQuizModel = _buildCreateQuizModel();
+
+      // Repository üzerinden quiz'i oluştur
+      final createdQuiz = await _postRepo.createQuiz(quiz: createQuizModel);
+
+      emit(
+        state.copyWith(
+          status: FormStatus.submissionSuccess,
+          createdQuiz: createdQuiz,
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -283,6 +346,97 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
         ),
       );
     }
+  }
+
+  CreateQuizModel _buildCreateQuizModel() {
+    // Questions'ları dönüştür
+    final questions = state.questions
+        .map((question) {
+          // Her seçenek için scoring'den point'leri al
+          final options = <CreateQuizOption>[];
+
+          for (
+            int optionIndex = 0;
+            optionIndex < question.options.length;
+            optionIndex++
+          ) {
+            final optionText = question.options[optionIndex];
+
+            final optionId =
+                'option_${state.questions.indexOf(question)}_$optionIndex';
+
+            // Bu seçenek için tüm result'lara verilen point'leri bul
+            final points = <String, int>{};
+            for (final scoring in state.scoring) {
+              if (scoring.questionId == question.id &&
+                  scoring.optionId == optionId) {
+                points.addAll(scoring.resultPoints);
+                break;
+              }
+            }
+
+            // Result ID'lerini title'lara dönüştür
+            final resultPoints = <String, int>{};
+            for (final result in state.results) {
+              final pointValue = points[result.id] ?? 0;
+              resultPoints[result.title] = pointValue;
+            }
+
+            options.add(
+              CreateQuizOption(text: optionText.trim(), points: resultPoints),
+            );
+          }
+
+          return CreateQuizQuestion(
+            text: question.questionText.trim(),
+            options: options,
+          );
+        })
+        .where((q) {
+          final hasOptions = q.options.isNotEmpty;
+          return hasOptions;
+        })
+        .toList();
+
+    // Results'ları dönüştür
+    final List<CreateQuizResult> results = state.results.map((result) {
+      return CreateQuizResult(
+        title: result.title.trim(),
+        description: result.description.trim(),
+        // imageUrl: result.imageUrl?.trim(),
+      );
+    }).toList();
+
+    final model = CreateQuizModel(
+      title: state.title.trim(),
+      body: state.description.trim().isEmpty ? null : state.description.trim(),
+      // questions: questions,
+      // results: results,
+      questions: questions
+          .map(
+            (q) => QuizQuestionInput(
+              text: q.text,
+              options: q.options
+                  .map((o) => QuizOptionInput(text: o.text, points: o.points))
+                  .toList(),
+            ),
+          )
+          .toList(),
+      results: <QuizResultInput>[
+        for (final result in results)
+          QuizResultInput(
+            title: result.title,
+            description: result.description,
+            // imageUrl: result.imageUrl,
+          ),
+      ],
+      allowMultipleAnswers: false,
+      allowAddingOptions: false,
+      showResultsBeforeVoting: false,
+      expiresAt: state.hasTimeLimit ? state.expiresAt : null,
+    );
+
+    return model;
   }
 
   //Quiz Results Management

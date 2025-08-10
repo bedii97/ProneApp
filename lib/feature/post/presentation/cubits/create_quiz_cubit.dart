@@ -1,39 +1,76 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prone/core/utils/quiz_validator.dart';
-import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
+
+// Helpers
+import 'helpers/helpers.dart';
+
+// Mixins
+import 'mixins/mixins.dart';
+
+// State
 import 'create_quiz_state.dart';
 
-class CreateQuizCubit extends Cubit<CreateQuizState> {
+/// CreateQuizCubit - Quiz oluşturma sürecini yönetir
+///
+/// Bu cubit, quiz oluşturma sürecinin tüm adımlarını koordine eder:
+/// - Temel bilgiler (başlık, açıklama, süre sınırı)
+/// - Sorular ve seçenekler (QuestionManagementMixin)
+/// - Sonuçlar (ResultsManagementMixin)
+/// - Puanlama sistemi (ScoringManagementMixin)
+/// - Form validation (CreateQuizValidator)
+/// - Model building (CreateQuizModelBuilder)
+class CreateQuizCubit extends Cubit<CreateQuizState>
+    with
+        QuestionManagementMixin,
+        ResultsManagementMixin,
+        ScoringManagementMixin {
   final PostRepo _postRepo;
 
-  CreateQuizCubit(this._postRepo)
-    : super(
-        CreateQuizState(
-          questions: [
-            QuizQuestionModel(
-              id: DateTime.now().millisecondsSinceEpoch.toString(), // ✅ ID ekle
-              questionText: '',
-              options: ['', ''], // ✅ En az 2 boş seçenek
-            ),
-          ],
-        ),
-      );
+  CreateQuizCubit(this._postRepo) : super(_initialState);
 
+  // --- Getters ---
+
+  /// Mevcut adım (0-4 arası)
   int get step => state.step;
+
+  /// Süre sınırı var mı?
   bool get hasTimeLimit => state.hasTimeLimit;
 
+  /// Form geçerli mi?
+  bool get isFormValid => CreateQuizValidator.validateAllSteps(state);
+
+  /// Puanlama tamamlandı mı?
+  bool get isScoringComplete => isAllScoringComplete();
+
+  /// Toplam ilerleme yüzdesi
+  double get overallProgress {
+    int completedSteps = 0;
+
+    // Her adımı kontrol et
+    for (int step = 0; step <= 4; step++) {
+      final tempState = state.copyWith(step: step);
+      if (CreateQuizValidator.validateCurrentStep(tempState).isValid) {
+        completedSteps++;
+      }
+    }
+
+    return (completedSteps / 5) * 100;
+  }
+
+  // --- Basic Info Methods ---
+
+  /// Quiz başlığını günceller
   void titleChanged(String value) {
     emit(state.copyWith(title: value));
   }
 
+  /// Quiz açıklamasını günceller
   void descriptionChanged(String value) {
     emit(state.copyWith(description: value));
   }
 
+  /// Süre sınırı durumunu değiştirir
   void hasTimeLimitChanged(bool value) {
     emit(
       state.copyWith(
@@ -43,90 +80,37 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     );
   }
 
+  /// Bitiş tarihini günceller
   void expiresAtChanged(DateTime? value) {
     emit(state.copyWith(expiresAt: value));
   }
 
-  String _generateUniqueId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random = (timestamp * 997) % 1000000; // Simple hash
-    return '${timestamp}_$random';
-  }
+  // --- Step Navigation ---
 
-  // Soru yönetimi
-  void addQuestion() {
-    final newQuestion = QuizQuestionModel(
-      id: _generateUniqueId(),
-      questionText: '',
-      options: ['', ''],
-    );
-
-    final updatedQuestions = [...state.questions, newQuestion];
-    emit(state.copyWith(questions: updatedQuestions));
-  }
-
-  void removeQuestion(int index) {
-    if (state.questions.length > 1) {
-      final updatedQuestions = List<QuizQuestionModel>.from(state.questions)
-        ..removeAt(index);
-      emit(state.copyWith(questions: updatedQuestions));
-    }
-  }
-
-  void updateQuestionText(int index, String text) {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    updatedQuestions[index] = updatedQuestions[index].copyWith(
-      questionText: text,
-    );
-    emit(state.copyWith(questions: updatedQuestions));
-  }
-
-  void addOption(int questionIndex) {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final options = List<String>.from(updatedQuestions[questionIndex].options)
-      ..add('');
-    updatedQuestions[questionIndex] = updatedQuestions[questionIndex].copyWith(
-      options: options,
-    );
-    emit(state.copyWith(questions: updatedQuestions));
-  }
-
-  void removeOption(int questionIndex, int optionIndex) {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final options = List<String>.from(updatedQuestions[questionIndex].options);
-    if (options.length > 1) {
-      options.removeAt(optionIndex);
-      updatedQuestions[questionIndex] = updatedQuestions[questionIndex]
-          .copyWith(options: options);
-      emit(state.copyWith(questions: updatedQuestions));
-    }
-  }
-
-  void updateOption(int questionIndex, int optionIndex, String value) {
-    final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final options = List<String>.from(updatedQuestions[questionIndex].options);
-    options[optionIndex] = value;
-    updatedQuestions[questionIndex] = updatedQuestions[questionIndex].copyWith(
-      options: options,
-    );
-    emit(state.copyWith(questions: updatedQuestions));
-  }
-
+  /// Bir önceki adıma geçer
   void previousStep() {
     if (state.step > 0) {
       emit(
         state.copyWith(
           step: state.step - 1,
           status: FormStatus.initial,
-          validationErrors: {}, // Geriye giderken hataları temizle
+          validationErrors: {},
         ),
       );
     }
   }
 
-  // --- Doğrulama Mantığı ---
+  /// Bir sonraki adıma geçer (validation ile)
   void nextStep() {
-    if (!validateCurrentStep()) {
+    final validationResult = CreateQuizValidator.validateCurrentStep(state);
+
+    if (!validationResult.isValid) {
+      emit(
+        state.copyWith(
+          status: FormStatus.invalid,
+          validationErrors: validationResult.errors,
+        ),
+      );
       return;
     }
 
@@ -141,193 +125,64 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
     }
   }
 
-  // ✅ Ana validation method - tüm step'ler için
-  bool validateCurrentStep() {
-    switch (state.step) {
-      case 0:
-        return validateStep1(); // Basic Info
-      case 1:
-        return validateStep2(); // Questions
-      case 2:
-        return validateStep3(); // Results
-      case 3:
-        return validateStep4(); // Scoring
-      case 4:
-        return validateStep5(); // Preview
-      default:
-        return true;
-    }
-  }
+  /// Belirli bir adıma atlar (validation ile)
+  void goToStep(int targetStep) {
+    if (targetStep < 0 || targetStep > 4) return;
+    if (targetStep == state.step) return;
 
-  bool _validateAllSteps() {
-    return validateStep1() &&
-        validateStep2() &&
-        validateStep3() &&
-        validateStep4() &&
-        validateStep5();
-  }
-
-  bool validateStep1() {
-    final titleError = QuizValidator.validateQuizTitle(state.title);
-    final descriptionError = QuizValidator.validateQuizDescription(
-      state.description,
-    );
-
-    final errors = <String, String>{};
-    if (titleError != null) errors['title'] = titleError;
-    if (descriptionError != null) errors['description'] = descriptionError;
-
-    if (state.hasTimeLimit && state.expiresAt == null) {
-      errors['expiresAt'] = 'Lütfen bitiş tarihi ve saati seçin';
-    } else if (state.hasTimeLimit &&
-        state.expiresAt != null &&
-        state.expiresAt!.isBefore(DateTime.now())) {
-      errors['expiresAt'] = 'Bitiş tarihi gelecekte olmalıdır';
-    }
-
-    if (errors.isNotEmpty) {
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
-    return true;
-  }
-
-  bool validateStep2() {
-    final errors = <String, String>{};
-
-    // En az bir soru olmalı
-    if (state.questions.isEmpty) {
-      errors['questions'] = 'En az bir soru eklemelisiniz';
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    // Her soruyu doğrula
-    for (int i = 0; i < state.questions.length; i++) {
-      final question = state.questions[i];
-
-      // Soru metni doğrulama
-      final questionError = QuizValidator.validateQuizQuestion(
-        question.questionText,
-      );
-      if (questionError != null) {
-        errors['question_$i'] = 'Soru ${i + 1}: $questionError';
-      }
-
-      // En az 2 seçenek olmalı
-      final validOptions = question.options
-          .where((option) => option.trim().isNotEmpty)
-          .toList();
-      if (validOptions.length < 2) {
-        errors['question_${i}_options'] =
-            'Soru ${i + 1}: En az 2 seçenek gereklidir';
-      }
-
-      // Her seçeneği doğrula
-      for (int j = 0; j < question.options.length; j++) {
-        final optionError = QuizValidator.validateQuizOption(
-          question.options[j],
+    // Hedef adımdan önce tüm adımları validate et
+    for (int step = 0; step < targetStep; step++) {
+      final tempState = state.copyWith(step: step);
+      if (!CreateQuizValidator.validateCurrentStep(tempState).isValid) {
+        // Geçersiz adım varsa oraya git
+        emit(
+          state.copyWith(
+            step: step,
+            status: FormStatus.invalid,
+            validationErrors: CreateQuizValidator.validateCurrentStep(
+              tempState,
+            ).errors,
+          ),
         );
-        if (optionError != null && question.options[j].isNotEmpty) {
-          errors['question_${i}_option_$j'] =
-              'Soru ${i + 1}, Seçenek ${j + 1}: $optionError';
-        }
+        return;
       }
     }
 
-    if (errors.isNotEmpty) {
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
-    return true;
-  }
-
-  bool validateStep3() {
-    final hasEnoughResults = state.results.length >= 2;
-    final hasValidResults = state.results.every(
-      (r) => r.title.trim().isNotEmpty && r.description.trim().isNotEmpty,
+    // Tüm adımlar geçerliyse hedef adıma git
+    emit(
+      state.copyWith(
+        step: targetStep,
+        status: FormStatus.initial,
+        validationErrors: {},
+      ),
     );
-
-    final errors = <String, String>{};
-    if (!hasEnoughResults) {
-      errors['results'] = 'En az 2 sonuç gereklidir';
-    }
-    if (!hasValidResults) {
-      errors['results'] = 'Tüm sonuçların başlık ve açıklaması doldurulmalıdır';
-    }
-
-    if (errors.isNotEmpty) {
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    emit(state.copyWith(validationErrors: {}, status: FormStatus.initial));
-    return true;
   }
 
-  bool validateStep4() {
-    // Scoring validation
-    final errors = <String, String>{};
+  // --- Quiz Publishing ---
 
-    // Her soru için scoring kontrol et
-    for (int i = 0; i < state.questions.length; i++) {
-      final question = state.questions[i];
-      bool hasScoring = false;
-
-      for (final scoring in state.scoring) {
-        if (scoring.questionId == question.id) {
-          hasScoring = true;
-          break;
-        }
-      }
-
-      if (!hasScoring) {
-        errors['scoring_$i'] = 'Soru ${i + 1} için puan sistemi tanımlanmamış';
-      }
-    }
-
-    if (errors.isNotEmpty) {
-      emit(
-        state.copyWith(validationErrors: errors, status: FormStatus.invalid),
-      );
-      return false;
-    }
-
-    return true;
-  }
-
-  bool validateStep5() {
-    // Preview için özel validation gerekirse
-    return true;
-  }
-
+  /// Quiz'i yayınlar
   Future<void> publishQuiz() async {
-    if (!_validateAllSteps()) {
+    if (!CreateQuizValidator.validateAllSteps(state)) {
       emit(
         state.copyWith(
           status: FormStatus.submissionFailure,
-          errorMessage: "Lütfen tüm adımlardaki eksikleri giderin.",
+          errorMessage: "Lütfen tüm adımlardaki eksiklikleri giderin.",
         ),
       );
       return;
     }
 
     emit(state.copyWith(status: FormStatus.submissionInProgress));
+
     try {
       // CreateQuizModel oluştur
-      final createQuizModel = _buildCreateQuizModel();
+      final createQuizModel = CreateQuizModelBuilder.build(state);
+
+      // Debug mode'da model'i yazdır
+      assert(() {
+        CreateQuizModelBuilder.debugPrintModel(createQuizModel);
+        return true;
+      }());
 
       // Repository üzerinden quiz'i oluştur
       final createdQuiz = await _postRepo.createQuiz(quiz: createQuizModel);
@@ -342,232 +197,76 @@ class CreateQuizCubit extends Cubit<CreateQuizState> {
       emit(
         state.copyWith(
           status: FormStatus.submissionFailure,
-          errorMessage: e.toString(),
+          errorMessage: _parseErrorMessage(e),
         ),
       );
     }
   }
 
-  CreateQuizModel _buildCreateQuizModel() {
-    // Questions'ları dönüştür
-    final questions = state.questions
-        .map((question) {
-          // Her seçenek için scoring'den point'leri al
-          final options = <CreateQuizOption>[];
-
-          for (
-            int optionIndex = 0;
-            optionIndex < question.options.length;
-            optionIndex++
-          ) {
-            final optionText = question.options[optionIndex];
-
-            final optionId =
-                'option_${state.questions.indexOf(question)}_$optionIndex';
-
-            // Bu seçenek için tüm result'lara verilen point'leri bul
-            final points = <String, int>{};
-            for (final scoring in state.scoring) {
-              if (scoring.questionId == question.id &&
-                  scoring.optionId == optionId) {
-                points.addAll(scoring.resultPoints);
-                break;
-              }
-            }
-
-            // Result ID'lerini title'lara dönüştür
-            final resultPoints = <String, int>{};
-            for (final result in state.results) {
-              final pointValue = points[result.id] ?? 0;
-              resultPoints[result.title] = pointValue;
-            }
-
-            options.add(
-              CreateQuizOption(text: optionText.trim(), points: resultPoints),
-            );
-          }
-
-          return CreateQuizQuestion(
-            text: question.questionText.trim(),
-            options: options,
-          );
-        })
-        .where((q) {
-          final hasOptions = q.options.isNotEmpty;
-          return hasOptions;
-        })
-        .toList();
-
-    // Results'ları dönüştür
-    final List<CreateQuizResult> results = state.results.map((result) {
-      return CreateQuizResult(
-        title: result.title.trim(),
-        description: result.description.trim(),
-        // imageUrl: result.imageUrl?.trim(),
-      );
-    }).toList();
-
-    final model = CreateQuizModel(
-      title: state.title.trim(),
-      body: state.description.trim().isEmpty ? null : state.description.trim(),
-      // questions: questions,
-      // results: results,
-      questions: questions
-          .map(
-            (q) => QuizQuestionInput(
-              text: q.text,
-              options: q.options
-                  .map((o) => QuizOptionInput(text: o.text, points: o.points))
-                  .toList(),
-            ),
-          )
-          .toList(),
-      results: <QuizResultInput>[
-        for (final result in results)
-          QuizResultInput(
-            title: result.title,
-            description: result.description,
-            // imageUrl: result.imageUrl,
-          ),
-      ],
-      allowMultipleAnswers: false,
-      allowAddingOptions: false,
-      showResultsBeforeVoting: false,
-      expiresAt: state.hasTimeLimit ? state.expiresAt : null,
+  /// Taslak olarak kaydet (gelecekte eklenebilir)
+  Future<void> saveDraft() async {
+    // TODO: Implement draft saving functionality
+    emit(
+      state.copyWith(
+        status: FormStatus.initial,
+        errorMessage: "Taslak kaydetme özelliği yakında gelecek!",
+      ),
     );
-
-    return model;
   }
 
-  //Quiz Results Management
-  // Results management
-  void addResult(QuizResultModel result) {
-    final updatedResults = [...state.results, result];
-    emit(state.copyWith(results: updatedResults));
-  }
+  // --- Helper Methods ---
 
-  void addResultFromTemplate(Map<String, dynamic> template) {
-    final result = QuizResultModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: template['title'] ?? '',
-      description: template['description'] ?? '',
-      icon: template['icon'] ?? 'emoji_events',
-      colorValue: template['colorValue'] ?? '#FFFFFF', // Default color
-    );
-    addResult(result);
-  }
+  /// Error mesajlarını user-friendly hale getirir
+  String _parseErrorMessage(dynamic error) {
+    final errorStr = error.toString().toLowerCase();
 
-  void updateResult(int index, QuizResultModel updatedResult) {
-    if (index >= 0 && index < state.results.length) {
-      final updatedResults = [...state.results];
-      updatedResults[index] = updatedResult;
-      emit(state.copyWith(results: updatedResults));
-    }
-  }
-
-  void removeResult(int index) {
-    if (index >= 0 && index < state.results.length) {
-      final updatedResults = [...state.results];
-      updatedResults.removeAt(index);
-      emit(state.copyWith(results: updatedResults));
-    }
-  }
-
-  void duplicateResult(int index) {
-    if (index >= 0 && index < state.results.length) {
-      final original = state.results[index];
-      final duplicate = original.copyWith(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: '${original.title} (kopya)',
-      );
-      addResult(duplicate);
-    }
-  }
-
-  //Scoring Management Methods
-  void updateScoring(
-    String questionId,
-    String optionId,
-    String resultId,
-    int points,
-  ) {
-    final updatedScoring = List<QuizScoringModel>.from(state.scoring);
-
-    // Find existing scoring or create new one
-    final existingIndex = updatedScoring.indexWhere(
-      (s) => s.questionId == questionId && s.optionId == optionId,
-    );
-
-    if (existingIndex != -1) {
-      // Update existing scoring
-      final existing = updatedScoring[existingIndex];
-      final updatedResultPoints = Map<String, int>.from(existing.resultPoints);
-      updatedResultPoints[resultId] = points;
-
-      updatedScoring[existingIndex] = QuizScoringModel(
-        questionId: existing.questionId,
-        optionId: existing.optionId,
-        resultPoints: updatedResultPoints,
-      );
+    if (errorStr.contains('network') || errorStr.contains('connection')) {
+      return 'İnternet bağlantınızı kontrol edin';
+    } else if (errorStr.contains('timeout')) {
+      return 'İşlem zaman aşımına uğradı, tekrar deneyin';
+    } else if (errorStr.contains('permission')) {
+      return 'Bu işlem için yetkiniz bulunmuyor';
+    } else if (errorStr.contains('validation')) {
+      return 'Girdiğiniz bilgilerde hata var';
     } else {
-      // Create new scoring
-      final newScoring = QuizScoringModel(
-        questionId: questionId,
-        optionId: optionId,
-        resultPoints: {resultId: points},
-      );
-      updatedScoring.add(newScoring);
+      return 'Beklenmeyen bir hata oluştu: ${error.toString()}';
     }
-
-    emit(state.copyWith(scoring: updatedScoring));
   }
 
-  void autoFillScoring() {
-    final updatedScoring = <QuizScoringModel>[];
-
-    for (int qIndex = 0; qIndex < state.questions.length; qIndex++) {
-      final question = state.questions[qIndex];
-
-      for (int oIndex = 0; oIndex < question.options.length; oIndex++) {
-        final optionId = 'option_${qIndex}_$oIndex'; // Option ID pattern
-        final resultPoints = <String, int>{};
-
-        // Simple auto-fill logic: diagonal pattern
-        for (int rIndex = 0; rIndex < state.results.length; rIndex++) {
-          final resultId = state.results[rIndex].id;
-
-          // Give higher points to matching indices, lower to adjacent
-          final points = (oIndex == rIndex)
-              ? 5
-              : (oIndex == rIndex + 1 || oIndex == rIndex - 1)
-              ? 2
-              : 0;
-
-          resultPoints[resultId] = points;
-        }
-
-        final scoring = QuizScoringModel(
-          questionId: question.id,
-          optionId: optionId,
-          resultPoints: resultPoints,
-        );
-
-        updatedScoring.add(scoring);
-      }
-    }
-
-    emit(state.copyWith(scoring: updatedScoring));
+  /// Initial state factory
+  static CreateQuizState get _initialState {
+    return CreateQuizState(
+      questions: [
+        QuizQuestionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          questionText: '',
+          options: ['', ''],
+        ),
+      ],
+    );
   }
 
-  void clearAllScoring() {
-    emit(state.copyWith(scoring: []));
+  /// Cubit'i sıfırlar (yeni quiz için)
+  void reset() {
+    emit(_initialState);
   }
 
-  void clearQuestionScoring(String questionId) {
-    final updatedScoring = state.scoring
-        .where((s) => s.questionId != questionId)
-        .toList();
-
-    emit(state.copyWith(scoring: updatedScoring));
+  /// Debug bilgilerini yazdırır
+  void debugPrintState() {
+    assert(() {
+      print('=== CreateQuizCubit Debug ===');
+      print('Step: ${state.step}');
+      print('Status: ${state.status}');
+      print('Title: ${state.title}');
+      print('Questions: ${state.questions.length}');
+      print('Results: ${state.results.length}');
+      print('Scoring: ${state.scoring.length}');
+      print('Validation Errors: ${state.validationErrors}');
+      print('Overall Progress: ${overallProgress.toStringAsFixed(1)}%');
+      print('Is Form Valid: $isFormValid');
+      print('Is Scoring Complete: $isScoringComplete');
+      print('=== End Debug ===');
+      return true;
+    }());
   }
 }

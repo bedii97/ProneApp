@@ -54,4 +54,14 @@ class QuizResultModel {
       rethrow;
     }
   }
+
+  static QuizResultModel mockData() {
+    return QuizResultModel(
+      id: "1",
+      title: "Mock Result",
+      description: "This is a mock result.",
+      icon: "emoji_events",
+      colorValue: "#FF0000",
+    );
+  }
 }

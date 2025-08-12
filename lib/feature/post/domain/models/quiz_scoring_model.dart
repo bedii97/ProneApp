@@ -63,4 +63,12 @@ class QuizScoringModel {
   int get hashCode {
     return questionId.hashCode ^ optionId.hashCode;
   }
+
+  static QuizScoringModel mockData() {
+    return QuizScoringModel(
+      questionId: "1",
+      optionId: "1",
+      resultPoints: {"1": 10, "2": 5},
+    );
+  }
 }

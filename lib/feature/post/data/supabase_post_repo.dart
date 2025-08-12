@@ -157,6 +157,7 @@ class SupabasePostRepo extends PostRepo {
 
       return quizModel;
     } catch (e, stackTrace) {
+      log('Error creating quiz', error: e, stackTrace: stackTrace);
       throw Exception('Quiz creation failed: $e');
     }
   }

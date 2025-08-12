@@ -99,7 +99,6 @@ class _CreateQuizViewState extends State<CreateQuizView> {
         ),
         backgroundColor: Colors.red,
         duration: const Duration(seconds: 5),
-        // behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'Tamam',
           textColor: Colors.white,
@@ -112,7 +111,6 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   }
 
   void _publishQuiz() {
-    // print('Quiz yayınlanıyor...');
     final cubit = context.read<CreateQuizCubit>();
     cubit.publishQuiz();
   }
@@ -158,119 +156,261 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      // PopScope ve AppBar kısımları Cubit'in state'ine bağlı olmadığı için burada kalabilir.
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+
+        // Quiz oluşturma süreci devam ediyorsa uyar
+        final state = context.read<CreateQuizCubit>().state;
+        if (state.status == FormStatus.submissionInProgress) {
+          final shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Quiz Oluşturuluyor'),
+              content: const Text(
+                'Quiz oluşturma işlemi devam ediyor. Çıkmak istediğinizden emin misiniz?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('İptal'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('Çık'),
+                ),
+              ],
+            ),
+          );
+          if (shouldExit == true && mounted) {
+            context.pop();
+          }
+          return;
+        }
 
         final shouldExit = await _showExitConfirmationDialog();
         if (shouldExit && mounted) {
           context.pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Quiz Oluştur'),
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              final shouldExit = await _showExitConfirmationDialog();
-              if (shouldExit && mounted) {
-                context.pop();
-              }
-            },
-          ),
-        ),
-        body: Column(
-          children: [
-            // Sadece Progress Indicator kısmı BlocBuilder ile sarıldı.
-            BlocBuilder<CreateQuizCubit, CreateQuizState>(
-              builder: (context, state) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Adım ${state.step + 1}/5: ${_stepTitles[state.step]}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: (state.step + 1) / 5,
-                        backgroundColor: Colors.grey[300],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+      child: BlocListener<CreateQuizCubit, CreateQuizState>(
+        listener: (context, state) {
+          if (state.status == FormStatus.submissionSuccess) {
+            // Ana sayfaya yönlendir ve tüm quiz oluşturma sayfalarını temizle
+            context.go('/');
 
-            // PageView kısmı Cubit state'ine bağlı değil, direkt kullanılıyor.
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: stepWidgets,
+            // Success mesajı göster
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Quiz başarıyla oluşturuldu! 🎉'),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
               ),
-            ),
+            );
+          } else if (state.status == FormStatus.submissionFailure) {
+            // Hata durumunda mesaj göster (sayfa kapanmasın)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.error, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Hata: ${state.errorMessage ?? "Bilinmeyen hata"}',
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+                behavior: SnackBarBehavior.floating,
+                action: SnackBarAction(
+                  label: 'Tekrar Dene',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    // Tekrar deneme için publishQuiz'i çağır
+                    _publishQuiz();
+                  },
+                ),
+              ),
+            );
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Quiz Oluştur'),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async {
+                // Loading durumu kontrolü
+                final state = context.read<CreateQuizCubit>().state;
+                if (state.status == FormStatus.submissionInProgress) {
+                  final shouldExit = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Quiz Oluşturuluyor'),
+                      content: const Text(
+                        'Quiz oluşturma işlemi devam ediyor. Çıkmak istediğinizden emin misiniz?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('İptal'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          child: const Text('Çık'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (shouldExit == true && mounted) {
+                    context.pop();
+                  }
+                  return;
+                }
 
-            // Sadece Bottom Navigation kısmı BlocBuilder ile sarıldı.
-            BlocBuilder<CreateQuizCubit, CreateQuizState>(
-              builder: (context, state) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withAlpha(50),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      if (state.step > 0)
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _previousStep,
-                            child: const Text('Geri'),
-                          ),
-                        ),
-                      if (state.step > 0) const SizedBox(width: 16),
-                      if (state.step == 0)
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              final shouldExit =
-                                  await _showExitConfirmationDialog();
-                              if (shouldExit && mounted) {
-                                context.pop();
-                              }
-                            },
-                            child: const Text('İptal'),
-                          ),
-                        ),
-                      if (state.step == 0) const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: state.step == 4 ? _publishQuiz : _nextStep,
-                          child: Text(state.step == 4 ? 'Yayınla' : 'İleri'),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                final shouldExit = await _showExitConfirmationDialog();
+                if (shouldExit && mounted) {
+                  context.pop();
+                }
               },
             ),
-          ],
+          ),
+          body: Column(
+            children: [
+              // Progress Indicator
+              BlocBuilder<CreateQuizCubit, CreateQuizState>(
+                builder: (context, state) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Adım ${state.step + 1}/5: ${_stepTitles[state.step]}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: (state.step + 1) / 5,
+                          backgroundColor: Colors.grey[300],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              // PageView
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: stepWidgets,
+                ),
+              ),
+
+              // Bottom Navigation
+              BlocBuilder<CreateQuizCubit, CreateQuizState>(
+                builder: (context, state) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withAlpha(50),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        if (state.step > 0)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed:
+                                  state.status ==
+                                      FormStatus.submissionInProgress
+                                  ? null
+                                  : _previousStep,
+                              child: const Text('Geri'),
+                            ),
+                          ),
+                        if (state.step > 0) const SizedBox(width: 16),
+                        if (state.step == 0)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed:
+                                  state.status ==
+                                      FormStatus.submissionInProgress
+                                  ? null
+                                  : () async {
+                                      final shouldExit =
+                                          await _showExitConfirmationDialog();
+                                      if (shouldExit && mounted) {
+                                        context.pop();
+                                      }
+                                    },
+                              child: const Text('İptal'),
+                            ),
+                          ),
+                        if (state.step == 0) const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed:
+                                state.status == FormStatus.submissionInProgress
+                                ? null
+                                : (state.step == 4 ? _publishQuiz : _nextStep),
+                            child:
+                                state.status == FormStatus.submissionInProgress
+                                ? const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Yayınlanıyor...'),
+                                    ],
+                                  )
+                                : Text(state.step == 4 ? 'Yayınla' : 'İleri'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -182,4 +182,24 @@ class QuizModel extends PostModel {
       userResultId: userResultId ?? this.userResultId,
     );
   }
+
+  static QuizModel mockData() {
+    return QuizModel(
+      id: "1",
+      title: "Mock Quiz",
+      body: "This is a mock quiz.",
+      userId: "user_1",
+      createdAt: DateTime.now(),
+      status: PostStatus.published,
+      description: "Mock description",
+      questions: [QuizQuestionModel.mockData(), QuizQuestionModel.mockData()],
+      results: [QuizResultModel.mockData(), QuizResultModel.mockData()],
+      scoring: [QuizScoringModel.mockData(), QuizScoringModel.mockData()],
+      hasTimeLimit: true,
+      expiresAt: DateTime.now().add(Duration(days: 7)),
+      totalParticipants: 5,
+      userParticipated: false,
+      userResultId: null,
+    );
+  }
 }

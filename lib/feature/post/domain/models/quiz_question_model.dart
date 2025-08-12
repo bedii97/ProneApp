@@ -48,4 +48,12 @@ class QuizQuestionModel {
       rethrow;
     }
   }
+
+  static QuizQuestionModel mockData() {
+    return QuizQuestionModel(
+      id: "1",
+      questionText: "Mock Question",
+      options: ["Option 1", "Option 2", "Option 3"],
+    );
+  }
 }

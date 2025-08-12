@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/core/routes/app_router.dart';
 import 'package:prone/feature/auth/presentation/cubits/auth_cubit.dart';
-import 'package:prone/feature/home/widgets/post_cards/poll_card.dart';
+import 'package:prone/feature/home/presentation/widgets/post_cards/poll_card.dart';
+import 'package:prone/feature/home/presentation/widgets/post_cards/quiz_card.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/quiz_model.dart';
 
 import 'package:prone/l10n/app_localizations.dart';
 
@@ -34,6 +36,7 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: ListView(
           children: [
+            QuizCard(quiz: QuizModel.mockData()),
             PollCard(poll: PollModel.mockData()),
             PollCard(poll: PollModel.mockData()),
             PollCard(poll: PollModel.mockData()),

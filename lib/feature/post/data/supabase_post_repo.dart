@@ -4,6 +4,7 @@ import 'package:prone/core/constants/supabase_constants.dart';
 import 'package:prone/feature/post/domain/models/create_poll_model.dart';
 import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/post_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_model.dart';
 
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
@@ -53,12 +54,6 @@ class SupabasePostRepo extends PostRepo {
   @override
   Future<Map<String, dynamic>> fetchPostById(String postId) {
     // TODO: implement fetchPostById
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> fetchPosts() {
-    // TODO: implement fetchPosts
     throw UnimplementedError();
   }
 
@@ -159,6 +154,84 @@ class SupabasePostRepo extends PostRepo {
     } catch (e, stackTrace) {
       log('Error creating quiz', error: e, stackTrace: stackTrace);
       throw Exception('Quiz creation failed: $e');
+    }
+  }
+
+  @override
+  Future<List<PostModel>> fetchPosts({int offset = 0, int limit = 10}) async {
+    try {
+      final response = await _supabase
+          .from(SupabaseConstants.POSTS_TABLE)
+          .select('''
+          id,
+          user_id,
+          post_type,
+          title,
+          body,
+          allow_multiple_answers,
+          allow_adding_options,
+          show_results_before_voting,
+          expires_at,
+          status,
+          created_at,
+          updated_at,
+          users!posts_user_id_fkey (
+            username,
+            avatar_url
+          ),
+          poll_options (
+            id,
+            option_text,
+            user_votes!user_votes_option_id_fkey (
+              count
+            )
+          ),
+          quiz_questions (
+            id,
+            question_text,
+            order_index,
+            quiz_options (
+              id,
+              option_text,
+              quiz_result_mappings (
+                points,
+                quiz_results (
+                  id
+                )
+              )
+            )
+          ),
+          quiz_results (
+            id,
+            title,
+            description,
+            image_url
+          ),
+          user_votes!user_votes_post_id_fkey (
+            option_id
+          ),
+          quiz_completions!quiz_completions_post_id_fkey (
+            result_id,
+            total_points
+          )
+        ''')
+          .eq('status', PostStatus.published.name)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+
+      inspect(response.toString());
+
+      final List<PostModel> posts = [];
+
+      for (final postData in response as List) {
+        final post = PostModel.fromJson(postData);
+        posts.add(post);
+      }
+
+      return posts;
+    } catch (e, stackTrace) {
+      log('Error fetching posts', error: e, stackTrace: stackTrace);
+      throw Exception('Failed to fetch posts: $e');
     }
   }
 }

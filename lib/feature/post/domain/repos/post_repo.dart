@@ -1,6 +1,7 @@
 import 'package:prone/feature/post/domain/models/create_poll_model.dart';
 import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/post_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_model.dart';
 
 abstract class PostRepo {
@@ -11,7 +12,7 @@ abstract class PostRepo {
   Future<QuizModel> createQuiz({required CreateQuizModel quiz}); // eklendi
 
   // Method to fetch all posts
-  Future<List<Map<String, dynamic>>> fetchPosts();
+  Future<List<PostModel>> fetchPosts({int offset = 1, int limit = 10});
 
   // Method to fetch a single post by ID
   Future<Map<String, dynamic>> fetchPostById(String postId);

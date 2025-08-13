@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:prone/feature/post/domain/models/quiz_option_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import '../create_quiz_state.dart';
 
@@ -15,7 +16,8 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
     final newQuestion = QuizQuestionModel(
       id: _generateUniqueId(),
       questionText: '',
-      options: ['', ''], // Başlangıçta 2 boş seçenek
+      options: [], // Başlangıçta 2 boş seçenek
+      orderIndex: 0,
     );
 
     final updatedQuestions = [...state.questions, newQuestion];
@@ -70,7 +72,14 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
     }
 
     final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final updatedOptions = List<String>.from(question.options)..add('');
+    final updatedOptions = List<QuizOptionModel>.from(question.options)
+      ..add(
+        QuizOptionModel(
+          id: _generateUniqueId(),
+          text: '',
+          questionId: question.id,
+        ),
+      );
 
     updatedQuestions[questionIndex] = question.copyWith(
       options: updatedOptions,
@@ -96,7 +105,7 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
     }
 
     final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final updatedOptions = List<String>.from(question.options)
+    final updatedOptions = List<QuizOptionModel>.from(question.options)
       ..removeAt(optionIndex);
 
     updatedQuestions[questionIndex] = question.copyWith(
@@ -125,8 +134,10 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
     }
 
     final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
-    final updatedOptions = List<String>.from(question.options);
-    updatedOptions[optionIndex] = value;
+    final updatedOptions = List<QuizOptionModel>.from(question.options);
+    updatedOptions[optionIndex] = updatedOptions[optionIndex].copyWith(
+      text: value,
+    );
 
     updatedQuestions[questionIndex] = question.copyWith(
       options: updatedOptions,
@@ -164,8 +175,10 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
     final originalQuestion = state.questions[index];
     final duplicatedQuestion = QuizQuestionModel(
       id: _generateUniqueId(),
+      orderIndex:
+          originalQuestion.orderIndex + 1, // Yeni soru için sıra numarası
       questionText: '${originalQuestion.questionText} (Kopya)',
-      options: List<String>.from(originalQuestion.options),
+      options: List<QuizOptionModel>.from(originalQuestion.options),
     );
 
     final updatedQuestions = List<QuizQuestionModel>.from(state.questions);
@@ -178,8 +191,16 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
   void resetAllQuestions() {
     final defaultQuestion = QuizQuestionModel(
       id: _generateUniqueId(),
+      orderIndex: 0,
       questionText: '',
-      options: ['', ''],
+      options: List<QuizOptionModel>.generate(2, (index) {
+        return QuizOptionModel(
+          id: _generateUniqueId(),
+          text: '',
+          questionId:
+              _generateUniqueId(), // Yeni ID, çünkü bu seçenekler yeni bir soruya ait
+        );
+      }),
     );
 
     emit(
@@ -214,7 +235,7 @@ mixin QuestionManagementMixin on Cubit<CreateQuizState> {
       return 0;
     }
     return state.questions[questionIndex].options
-        .where((option) => option.trim().isNotEmpty)
+        .where((QuizOptionModel option) => option.text.trim().isNotEmpty)
         .length;
   }
 }

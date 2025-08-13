@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/core/routes/app_router.dart';
 import 'package:prone/feature/auth/presentation/cubits/auth_cubit.dart';
+import 'package:prone/feature/home/presentation/cubits/home_cubit.dart';
+import 'package:prone/feature/home/presentation/cubits/home_state.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/poll_card.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/quiz_card.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
@@ -34,13 +36,33 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: ListView(
-          children: [
-            QuizCard(quiz: QuizModel.mockData()),
-            PollCard(poll: PollModel.mockData()),
-            PollCard(poll: PollModel.mockData()),
-            PollCard(poll: PollModel.mockData()),
-          ],
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            if (state is HomeLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is HomeLoaded) {
+              return ListView.builder(
+                itemCount: state.posts.length,
+                itemBuilder: (context, index) {
+                  final post = state.posts[index];
+                  if (post is PollModel) {
+                    return PollCard(poll: post);
+                  } else if (post is QuizModel) {
+                    return QuizCard(quiz: post);
+                  }
+                  return const SizedBox.shrink();
+                },
+              );
+            }
+            return Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<HomeCubit>().fetchPosts();
+                },
+                child: Text("Retry"),
+              ),
+            );
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -33,7 +33,7 @@ class PostFooter extends StatelessWidget {
 
       case PostType.quiz:
         final quizPost = post as QuizModel;
-        return 'Katılımcı: ${quizPost.totalParticipants}';
+        return 'Katılımcı: ${quizPost.completionCount}';
 
       default:
         return '';

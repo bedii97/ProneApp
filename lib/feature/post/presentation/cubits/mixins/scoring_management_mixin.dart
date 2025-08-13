@@ -58,7 +58,7 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
         if (optionText.trim().isEmpty) continue;
 
         final optionId = 'option_${questionIndex}_$optionIndex';
@@ -103,7 +103,7 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
         if (optionText.trim().isEmpty) continue;
 
         final optionId = 'option_${questionIndex}_$optionIndex';
@@ -210,7 +210,7 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
         if (optionText.trim().isEmpty) continue;
 
         final optionId = 'option_${questionIndex}_$optionIndex';
@@ -246,7 +246,7 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
         if (optionText.trim().isEmpty) continue;
 
         final optionId = 'option_${questionIndex}_$optionIndex';
@@ -365,7 +365,7 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
         optionIndex++
       ) {
         final optionText = question.options[optionIndex];
-        if (optionText.trim().isEmpty) continue;
+        if (optionText.text.trim().isEmpty) continue;
 
         totalRequired += state.results.length; // Her result için puan gerekli
 

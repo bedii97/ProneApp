@@ -30,7 +30,7 @@ class QuizOptionsList extends StatelessWidget {
           int index = entry.key;
           return QuizOptionItem(
             index: index,
-            value: entry.value,
+            value: entry.value.text,
             canRemove: question.options.length > 1,
             onChanged: (value) {
               context.read<CreateQuizCubit>().updateOption(

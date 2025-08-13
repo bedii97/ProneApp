@@ -56,7 +56,9 @@ class OptionScoring extends StatelessWidget {
                 resultTitle: result.title.isEmpty
                     ? 'Sonuç ${state.results.indexOf(result) + 1}'
                     : result.title,
-                resultColor: QuizScoringHelpers.hexToColor(result.colorValue),
+                resultColor: QuizScoringHelpers.hexToColor(
+                  result.colorValue ?? 'FFFFFF',
+                ),
                 currentPoints: currentPoints,
                 updateScoring: updateScoring,
               );

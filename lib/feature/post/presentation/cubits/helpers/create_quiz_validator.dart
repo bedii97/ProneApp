@@ -101,7 +101,7 @@ class CreateQuizValidator {
 
       // Seçenekler kontrolü
       final nonEmptyOptions = question.options
-          .where((option) => option.trim().isNotEmpty)
+          .where((option) => option.text.trim().isNotEmpty)
           .toList();
 
       if (nonEmptyOptions.length < 2) {
@@ -188,7 +188,7 @@ class CreateQuizValidator {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
         if (optionText.trim().isEmpty) continue;
 
         final optionId = 'option_${questionIndex}_$optionIndex';

@@ -38,7 +38,7 @@ class CreateQuizModelBuilder {
         optionIndex < question.options.length;
         optionIndex++
       ) {
-        final optionText = question.options[optionIndex];
+        final optionText = question.options[optionIndex].text;
 
         // Boş seçenekleri atla
         if (optionText.trim().isEmpty) continue;

@@ -1,205 +1,246 @@
 import 'package:prone/feature/post/domain/models/post_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
-import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 
 class QuizModel extends PostModel {
-  final String? description;
+  // Quiz-specific data (JSON'daki "quiz" object'inden gelecek)
   final List<QuizQuestionModel> questions;
   final List<QuizResultModel> results;
-  final List<QuizScoringModel> scoring;
-  final bool hasTimeLimit;
-  final DateTime? expiresAt;
-  final int totalParticipants;
-  final bool userParticipated;
+
+  // User interaction state
+  final bool userCompleted;
   final String? userResultId;
+  final int? userTotalPoints;
+
+  // Quiz statistics
+  final int completionCount;
 
   const QuizModel({
+    // PostModel fields
     super.id,
+    required super.userId,
     required super.title,
     super.body,
     super.imageUrls,
-    required super.userId,
     required super.createdAt,
-    super.status,
-    this.description,
+    super.updatedAt,
+    super.status = PostStatus.published,
+    required super.allowMultipleAnswers,
+    required super.allowAddingOptions,
+    required super.showResultsBeforeVoting,
+    super.expiresAt,
+    required super.authorUsername,
+    super.authorAvatarUrl,
+
+    // Quiz-specific fields
     required this.questions,
     required this.results,
-    required this.scoring,
-    this.hasTimeLimit = false,
-    this.expiresAt,
-    this.totalParticipants = 0,
-    this.userParticipated = false,
+    required this.userCompleted,
     this.userResultId,
+    this.userTotalPoints,
+    required this.completionCount,
   }) : super(type: PostType.quiz);
 
   factory QuizModel.fromJson(Map<String, dynamic> json) {
-    try {
-      final questionsJson = json['quiz_questions'] as List<dynamic>?;
-      final resultsJson = json['quiz_results'] as List<dynamic>?;
-      final scoringJson = json['scoring'] as List<dynamic>?; // ✅ Null olabilir
+    // Author bilgisi
+    final usersData = json['users'] as Map<String, dynamic>? ?? {};
 
-      return QuizModel(
-        id: json['id'] as String?,
-        title: json['title'] as String,
-        body: json['body'] as String?,
-        imageUrls: json['image_urls'] != null
-            ? List<String>.from(json['image_urls'] as List)
-            : null,
-        userId: json['user_id'] as String,
-        createdAt: DateTime.parse(json['created_at'] as String),
-        status: PostStatus.values.firstWhere(
-          (e) => e.name == (json['status'] as String? ?? 'draft'),
-          orElse: () => PostStatus.draft,
-        ),
-        description: json['description'] as String?,
-        questions: questionsJson != null
-            ? questionsJson
-                  .map(
-                    (q) =>
-                        QuizQuestionModel.fromJson(q as Map<String, dynamic>),
-                  )
-                  .toList()
-            : <QuizQuestionModel>[],
-        results: resultsJson != null
-            ? resultsJson
-                  .map(
-                    (r) => QuizResultModel.fromJson(r as Map<String, dynamic>),
-                  )
-                  .toList()
-            : <QuizResultModel>[],
-        scoring:
-            scoringJson !=
-                null // ✅ Null check eklendi
-            ? scoringJson
-                  .map(
-                    (s) => QuizScoringModel.fromJson(s as Map<String, dynamic>),
-                  )
-                  .toList()
-            : <QuizScoringModel>[], // ✅ Boş liste
-        hasTimeLimit: json['has_time_limit'] as bool? ?? false,
-        expiresAt: json['expires_at'] != null
-            ? DateTime.parse(json['expires_at'] as String)
-            : null,
-        totalParticipants: json['total_participants'] as int? ?? 0,
-        userParticipated: json['user_participated'] as bool? ?? false,
-        userResultId: json['user_result_id'] as String?,
-      );
-    } catch (e) {
-      rethrow;
-    }
-  }
+    // Questions'ları parse et
+    final questionsData = json['quiz_questions'] as List<dynamic>? ?? [];
+    final questions = questionsData.map((questionData) {
+      return QuizQuestionModel.fromJson(questionData);
+    }).toList();
 
-  // Factory from CreateQuizState
-  factory QuizModel.fromCreateQuizState(CreateQuizState state, String userId) {
+    // Sort by order
+    questions.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
+
+    // Results'ları parse et
+    final resultsData = json['quiz_results'] as List<dynamic>? ?? [];
+    final results = resultsData.map((resultData) {
+      return QuizResultModel.fromJson(resultData);
+    }).toList();
+
+    // User completion durumu
+    final completionsData = json['quiz_completions'] as List<dynamic>? ?? [];
+    final userCompletion = completionsData.isNotEmpty
+        ? completionsData.first
+        : null;
+    final userCompleted = userCompletion != null;
+    final userResultId = userCompletion?['result_id'] as String?;
+    final userTotalPoints = userCompletion?['total_points'] as int?;
+
     return QuizModel(
-      title: state.title,
-      body: state.description,
-      userId: userId,
-      createdAt: DateTime.now(),
-      status: PostStatus.draft,
-      description: state.description,
-      questions: state.questions,
-      results: state.results,
-      scoring: state.scoring,
-      hasTimeLimit: state.hasTimeLimit,
-      expiresAt: state.expiresAt,
+      // Base fields
+      id: json['id'] as String?,
+      userId: json['user_id'] as String,
+      title: json['title'] as String,
+      body: json['body'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      status: PostStatus.values.firstWhere(
+        (e) => e.name == (json['status'] as String? ?? 'published'),
+        orElse: () => PostStatus.published,
+      ),
+      allowMultipleAnswers: json['allow_multiple_answers'] as bool? ?? false,
+      allowAddingOptions: json['allow_adding_options'] as bool? ?? false,
+      showResultsBeforeVoting:
+          json['show_results_before_voting'] as bool? ?? false,
+      expiresAt: json['expires_at'] != null
+          ? DateTime.parse(json['expires_at'] as String)
+          : null,
+      authorUsername: usersData['username'] as String? ?? 'Unknown',
+      authorAvatarUrl: usersData['avatar_url'] as String?,
+
+      // Quiz-specific fields
+      questions: questions,
+      results: results,
+      userCompleted: userCompleted,
+      userResultId: userResultId,
+      userTotalPoints: userTotalPoints,
+      completionCount: 0, // TODO: Implement with count query
     );
   }
 
   @override
   Map<String, dynamic> toBaseJson() {
     return {
+      // Base PostModel fields
       'id': id,
+      'user_id': userId,
+      'post_type': type.name,
       'title': title,
       'body': body,
-      'image_urls': imageUrls,
-      'user_id': userId,
-      'created_at': createdAt.toIso8601String(),
-      'post_type': type.name,
-      'status': status.name,
-      'description': description,
-      'questions': questions.map((q) => q.toJson()).toList(),
-      'results': results.map((r) => r.toJson()).toList(),
-      'scoring': scoring.map((s) => s.toJson()).toList(),
-      'has_time_limit': hasTimeLimit,
+      'allow_multiple_answers': allowMultipleAnswers,
+      'allow_adding_options': allowAddingOptions,
+      'show_results_before_voting': showResultsBeforeVoting,
       'expires_at': expiresAt?.toIso8601String(),
-      'total_participants': totalParticipants,
-      'user_participated': userParticipated,
-      'user_result_id': userResultId,
+      'status': status.name,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'author': {'username': authorUsername, 'avatar_url': authorAvatarUrl},
+
+      // Quiz-specific data (nested object)
+      'quiz': {
+        'questions': questions.map((question) => question.toJson()).toList(),
+        'results': results.map((result) => result.toJson()).toList(),
+        'user_completed': userCompleted,
+        'user_result_id': userResultId,
+        'user_total_points': userTotalPoints,
+        'completion_count': completionCount,
+      },
     };
   }
 
-  // Helper: Check if quiz is valid for publishing
-  bool get isValidForPublishing {
-    return title.isNotEmpty &&
-        questions.length >= 2 &&
-        results.length >= 2 &&
-        scoring.isNotEmpty;
+  // Quiz-specific helper methods
+  QuizQuestionModel? getQuestionById(String questionId) {
+    try {
+      return questions.firstWhere((q) => q.id == questionId);
+    } catch (e) {
+      return null;
+    }
   }
 
-  // Helper: Get user's quiz result
+  QuizResultModel? getResultById(String resultId) {
+    try {
+      return results.firstWhere((r) => r.id == resultId);
+    } catch (e) {
+      return null;
+    }
+  }
+
   QuizResultModel? get userResult {
     if (userResultId == null) return null;
-    return results.where((r) => r.id == userResultId).firstOrNull;
+    return getResultById(userResultId!);
   }
 
-  QuizModel copyWith({
+  // Quiz state helpers
+  int get questionCount => questions.length;
+  int get resultCount => results.length;
+  bool get hasExpired => isExpired;
+  bool get canTakeQuiz => !userCompleted && !hasExpired;
+  bool get canSeeResults =>
+      showResultsBeforeVoting || userCompleted || hasExpired;
+
+  // Calculate score for given answers
+  Map<String, int> calculateScore(Map<String, String> userAnswers) {
+    final Map<String, int> scores = {};
+
+    // Initialize scores
+    for (final result in results) {
+      scores[result.id] = 0;
+    }
+
+    // Calculate points for each answer
+    for (final entry in userAnswers.entries) {
+      final questionId = entry.key;
+      final optionId = entry.value;
+
+      final question = getQuestionById(questionId);
+      if (question != null) {
+        final option = question.getOptionById(optionId);
+        if (option != null) {
+          for (final resultEntry in option.resultMappings.entries) {
+            scores[resultEntry.key] =
+                (scores[resultEntry.key] ?? 0) + resultEntry.value;
+          }
+        }
+      }
+    }
+
+    return scores;
+  }
+
+  // Determine winning result from scores
+  String? determineResult(Map<String, int> scores) {
+    if (scores.isEmpty) return null;
+
+    String? winningResultId;
+    int maxScore = -1;
+
+    for (final entry in scores.entries) {
+      if (entry.value > maxScore) {
+        winningResultId = entry.key;
+        maxScore = entry.value;
+      }
+    }
+
+    return winningResultId;
+  }
+
+  // Mock data for testing
+  static QuizModel mockData({
     String? id,
     String? title,
     String? body,
-    List<String>? imageUrls,
     String? userId,
     DateTime? createdAt,
-    PostStatus? status,
-    String? description,
-    List<QuizQuestionModel>? questions,
-    List<QuizResultModel>? results,
-    List<QuizScoringModel>? scoring,
-    bool? hasTimeLimit,
-    DateTime? expiresAt,
-    int? totalParticipants,
-    bool? userParticipated,
-    String? userResultId,
+    PostStatus status = PostStatus.published,
   }) {
     return QuizModel(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      body: body ?? this.body,
-      imageUrls: imageUrls ?? this.imageUrls,
-      userId: userId ?? this.userId,
-      createdAt: createdAt ?? this.createdAt,
-      status: status ?? this.status,
-      description: description ?? this.description,
-      questions: questions ?? this.questions,
-      results: results ?? this.results,
-      scoring: scoring ?? this.scoring,
-      hasTimeLimit: hasTimeLimit ?? this.hasTimeLimit,
-      expiresAt: expiresAt ?? this.expiresAt,
-      totalParticipants: totalParticipants ?? this.totalParticipants,
-      userParticipated: userParticipated ?? this.userParticipated,
-      userResultId: userResultId ?? this.userResultId,
+      // PostModel fields
+      id: id ?? 'quiz_${DateTime.now().millisecondsSinceEpoch}',
+      userId: userId ?? 'user_123',
+      title: title ?? 'Personality Quiz',
+      body: body ?? 'Discover your personality type!',
+      createdAt: createdAt ?? DateTime.now(),
+      status: status,
+      allowMultipleAnswers: false,
+      allowAddingOptions: false,
+      showResultsBeforeVoting: false,
+      authorUsername: 'test_user',
+
+      // Quiz-specific fields
+      questions: [],
+      results: [],
+      userCompleted: false,
+      completionCount: 0,
     );
   }
 
-  static QuizModel mockData() {
-    return QuizModel(
-      id: "1",
-      title: "Mock Quiz",
-      body: "This is a mock quiz.",
-      userId: "user_1",
-      createdAt: DateTime.now(),
-      status: PostStatus.published,
-      description: "Mock description",
-      questions: [QuizQuestionModel.mockData(), QuizQuestionModel.mockData()],
-      results: [QuizResultModel.mockData(), QuizResultModel.mockData()],
-      scoring: [QuizScoringModel.mockData(), QuizScoringModel.mockData()],
-      hasTimeLimit: true,
-      expiresAt: DateTime.now().add(Duration(days: 7)),
-      totalParticipants: 5,
-      userParticipated: false,
-      userResultId: null,
-    );
+  @override
+  String toString() {
+    return 'QuizModel(id: $id, title: $title, questions: ${questions.length}, results: ${results.length}, userCompleted: $userCompleted)';
   }
 }

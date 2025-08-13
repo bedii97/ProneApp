@@ -103,9 +103,9 @@ class QuizCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (quiz.totalParticipants > 0)
+                      if (quiz.completionCount > 0)
                         Text(
-                          '${quiz.totalParticipants} kişi katıldı',
+                          '${quiz.completionCount} kişi katıldı',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
@@ -130,7 +130,7 @@ class QuizCard extends StatelessWidget {
   }
 
   Widget _buildFloatingActionButton(BuildContext context, ThemeData theme) {
-    bool userParticipated = quiz.userParticipated;
+    bool userParticipated = quiz.userCompleted;
 
     return Container(
       width: 80,
@@ -207,7 +207,7 @@ class QuizCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (quiz.userParticipated) ...[
+          if (quiz.userCompleted) ...[
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

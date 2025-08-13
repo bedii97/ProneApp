@@ -39,11 +39,13 @@ class BalanceOverview extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: QuizScoringHelpers.hexToColor(
-                      result.colorValue,
+                      result.colorValue ?? 'FFFFFF',
                     ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: QuizScoringHelpers.hexToColor(result.colorValue),
+                      color: QuizScoringHelpers.hexToColor(
+                        result.colorValue ?? 'FFFFFF',
+                      ),
                     ),
                   ),
                   child: Column(
@@ -72,7 +74,7 @@ class BalanceOverview extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: QuizScoringHelpers.hexToColor(
-                            result.colorValue,
+                            result.colorValue ?? 'FFFFFF',
                           ),
                         ),
                       ),

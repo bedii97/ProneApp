@@ -19,7 +19,7 @@ class PollOption extends StatelessWidget {
   }
 
   Widget _buildResultOption(BuildContext context) {
-    final bool isSelectedOption = poll.userVoteOption == option.id;
+    final bool isSelectedOption = poll.userVoteOptionId == option.id;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),

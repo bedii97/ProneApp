@@ -55,7 +55,7 @@ class QuestionCard extends StatelessWidget {
               return OptionScoring(
                 questionId: question.id,
                 optionId: optionId,
-                optionText: optionText,
+                optionText: optionText.text,
                 optionIndex: optionIndex,
                 state: state,
                 updateScoring: updateScoring,

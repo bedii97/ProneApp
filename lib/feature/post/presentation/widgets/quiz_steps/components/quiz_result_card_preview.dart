@@ -37,7 +37,10 @@ class QuizResultCardPreview extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(_getIconData(result.icon), size: 24),
+                child: Icon(
+                  _getIconData(result.icon ?? 'emoji_events'),
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

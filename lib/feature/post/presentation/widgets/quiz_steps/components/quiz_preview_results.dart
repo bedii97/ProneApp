@@ -52,7 +52,7 @@ class QuizPreviewResults extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              _getIconData(result.icon),
+              _getIconData(result.icon ?? 'emoji_events'),
               color: Colors.blue[700],
               size: 24,
             ),

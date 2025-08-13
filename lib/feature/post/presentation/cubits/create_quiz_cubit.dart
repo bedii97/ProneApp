@@ -240,7 +240,8 @@ class CreateQuizCubit extends Cubit<CreateQuizState>
         QuizQuestionModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           questionText: '',
-          options: ['', ''],
+          orderIndex: 0,
+          options: [],
         ),
       ],
     );

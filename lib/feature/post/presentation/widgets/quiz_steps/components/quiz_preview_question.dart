@@ -61,7 +61,7 @@ class QuizPreviewQuestion extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        option,
+                        option.text,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.black87,

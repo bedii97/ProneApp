@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 
 import 'components/post_header.dart';
@@ -20,22 +21,27 @@ class PollCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PostHeader(post: poll), // ✅ poll polymorphic olarak geçer
-            const SizedBox(height: 16),
+        child: InkWell(
+          onTap: () {
+            context.push('/poll/${poll.id}');
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PostHeader(post: poll), // ✅ poll polymorphic olarak geçer
+              const SizedBox(height: 16),
 
-            PostContent(post: poll), // ✅ poll polymorphic olarak geçer
-            const SizedBox(height: 16),
+              PostContent(post: poll), // ✅ poll polymorphic olarak geçer
+              const SizedBox(height: 16),
 
-            // ✅ Direkt PollSection kullan
-            PollSection(poll: poll),
+              // ✅ Direkt PollSection kullan
+              PollSection(poll: poll),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            PostFooter(post: poll), // ✅ poll polymorphic olarak geçer
-          ],
+              PostFooter(post: poll), // ✅ poll polymorphic olarak geçer
+            ],
+          ),
         ),
       ),
     );

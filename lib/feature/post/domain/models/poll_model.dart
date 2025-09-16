@@ -12,23 +12,23 @@ class PollModel extends PostModel {
 
   const PollModel({
     // PostModel fields
-    super.id,
-    required super.userId,
-    required super.title,
-    super.body,
+    super.id, //
+    required super.userId, //
+    required super.title, //
+    super.body, //
     super.imageUrls,
-    required super.createdAt,
-    super.updatedAt,
-    super.status = PostStatus.published,
-    required super.allowMultipleAnswers,
-    required super.allowAddingOptions,
-    required super.showResultsBeforeVoting,
-    super.expiresAt,
+    required super.createdAt, //
+    super.updatedAt, //
+    super.status = PostStatus.published, //
+    required super.allowMultipleAnswers, //
+    required super.allowAddingOptions, //
+    required super.showResultsBeforeVoting, //
+    super.expiresAt, //
     required super.authorUsername,
     super.authorAvatarUrl,
 
     // Poll-specific fields
-    required this.options,
+    required this.options, //
     required this.totalVotes,
     required this.userVoted,
     this.userVoteOptionId,
@@ -37,11 +37,11 @@ class PollModel extends PostModel {
   factory PollModel.fromJson(Map<String, dynamic> json) {
     // Author bilgisi
     final usersData = json['users'] as Map<String, dynamic>? ?? {};
+    //Total Votes buradan taşındı
 
     // Poll options'ları işle
     final pollOptionsData = json['poll_options'] as List<dynamic>? ?? [];
     List<OptionModel> options = [];
-    int totalVotes = 0;
 
     for (final optionData in pollOptionsData) {
       // Vote count'u hesapla
@@ -49,8 +49,6 @@ class PollModel extends PostModel {
       final voteCount = userVotesData.isNotEmpty
           ? (userVotesData.first['count'] as int? ?? 0)
           : 0;
-
-      totalVotes += voteCount;
 
       options.add(
         OptionModel(
@@ -61,6 +59,12 @@ class PollModel extends PostModel {
         ),
       );
     }
+
+    // final totalVotes = json['total_votes'] as int? ?? 0;
+    final totalVotes = options.fold<int>(
+      0,
+      (sum, option) => sum + option.votes,
+    );
 
     // Percentage'ları hesapla
     for (int i = 0; i < options.length; i++) {

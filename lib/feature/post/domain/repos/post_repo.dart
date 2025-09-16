@@ -16,4 +16,7 @@ abstract class PostRepo {
 
   // Method to fetch a single post by ID
   Future<Map<String, dynamic>> fetchPostById(String postId);
+
+  //Method to fetch poll details
+  Future<PollModel> getPollById(String pollId);
 }

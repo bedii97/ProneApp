@@ -53,6 +53,10 @@ class HomeScreen extends StatelessWidget {
                   return const SizedBox.shrink();
                 },
               );
+            } else if (state is HomeError) {
+              return Center(child: Text(state.message));
+            } else if (state is HomeEmpty) {
+              return Center(child: Text("No Post"));
             }
             return Center(
               child: ElevatedButton(

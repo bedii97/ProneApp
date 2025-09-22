@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/data/supabase_post_repo.dart';
@@ -31,7 +29,6 @@ class PollDetailScreen extends StatelessWidget {
             if (state is PollDetailLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is PollDetailLoaded) {
-              inspect(state.poll);
               return _buildPollDetail(context, state.poll);
             } else if (state is PollDetailError) {
               return _buildErrorState(context, state.message);
@@ -249,16 +246,9 @@ class PollDetailScreen extends StatelessWidget {
       child: InkWell(
         onTap: poll.canVote
             ? () {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(
-                //     content: Text('Voting feature coming soon!'),
-                //     behavior: SnackBarBehavior.floating,
-                //   ),
-                // );
                 context.read<PollDetailCubit>().vote(poll.id ?? '', [
                   option.id,
                 ]);
-                print('Voted for option ${option.id}');
               }
             : null,
         borderRadius: BorderRadius.circular(12),

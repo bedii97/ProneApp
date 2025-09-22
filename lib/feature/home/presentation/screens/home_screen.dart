@@ -17,6 +17,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<HomeCubit>().fetchPosts();
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.homeScreen),
@@ -31,6 +32,17 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () {
               context.read<AuthCubit>().logout();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.usb_rounded),
+            onPressed: () {
+              context.read<AuthCubit>().currentUserName.then((username) {
+                final snackBar = SnackBar(
+                  content: Text('Current user: ${username ?? "Unknown"}'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              });
             },
           ),
         ],
@@ -58,6 +70,7 @@ class HomeScreen extends StatelessWidget {
             } else if (state is HomeEmpty) {
               return Center(child: Text("No Post"));
             }
+            //HomeInitial or other states
             return Center(
               child: ElevatedButton(
                 onPressed: () {

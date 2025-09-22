@@ -29,8 +29,5 @@ class PollDetailError extends PollDetailState {
 }
 
 class PollDetailVoting extends PollDetailState {
-  final PollModel poll;
-  final String optionId;
-
-  const PollDetailVoting({required this.poll, required this.optionId});
+  const PollDetailVoting();
 }

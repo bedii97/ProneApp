@@ -21,4 +21,23 @@ class PollDetailCubit extends Cubit<PollDetailState> {
       emit(PollDetailError(message: e.toString()));
     }
   }
+
+  Future<void> vote(String pollId, List<String> optionIds) async {
+    try {
+      // final poll = (state as PollDetailLoaded).poll.copyWith(
+      //   userVoted: true,
+      //   userVoteOptionId: optionIds.first,
+      // );
+      emit(PollDetailVoting());
+
+      // Oylama işlemini gerçekleştir
+      await _postRepo.voteOnPoll(pollId: pollId, optionIds: optionIds);
+
+      // Güncellenmiş anket verisini tekrar yükle
+      final updatedPoll = await _postRepo.getPollById(pollId);
+      emit(PollDetailLoaded(poll: updatedPoll));
+    } catch (e) {
+      emit(PollDetailError(message: e.toString()));
+    }
+  }
 }

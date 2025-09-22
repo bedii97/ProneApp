@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:prone/feature/post/domain/models/option_model.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
 
@@ -37,7 +39,6 @@ class PollModel extends PostModel {
   factory PollModel.fromJson(Map<String, dynamic> json) {
     // Author bilgisi
     final usersData = json['users'] as Map<String, dynamic>? ?? {};
-    //Total Votes buradan taşındı
 
     // Poll options'ları işle
     final pollOptionsData = json['poll_options'] as List<dynamic>? ?? [];
@@ -60,7 +61,6 @@ class PollModel extends PostModel {
       );
     }
 
-    // final totalVotes = json['total_votes'] as int? ?? 0;
     final totalVotes = options.fold<int>(
       0,
       (sum, option) => sum + option.votes,
@@ -74,12 +74,20 @@ class PollModel extends PostModel {
       options[i] = options[i].copyWith(percentage: percentage);
     }
 
-    // User'ın vote durumu
+    // User'ın vote durumu - BU KISIM DÜZELTILDI
     final userVotesData = json['user_votes'] as List<dynamic>? ?? [];
-    final userVoteOptionId = userVotesData.isNotEmpty
-        ? userVotesData.first['option_id'] as String?
-        : null;
+    String? userVoteOptionId;
+
+    // user_votes boş değilse ve içinde data varsa
+    if (userVotesData.isNotEmpty) {
+      final firstVote = userVotesData.first as Map<String, dynamic>?;
+      userVoteOptionId = firstVote?['option_id'] as String?;
+    }
+
     final userVoted = userVoteOptionId != null;
+
+    log('POLL MODEL');
+    log('User voted: $userVoted, User vote option ID: $userVoteOptionId');
 
     return PollModel(
       // Base fields
@@ -150,6 +158,56 @@ class PollModel extends PostModel {
     };
   }
 
+  // CopyWith
+  PollModel copyWith({
+    // PostModel fields
+    String? id,
+    String? userId,
+    String? title,
+    String? body,
+    List<String>? imageUrls,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    PostStatus? status,
+    bool? allowMultipleAnswers,
+    bool? allowAddingOptions,
+    bool? showResultsBeforeVoting,
+    DateTime? expiresAt,
+    String? authorUsername,
+    String? authorAvatarUrl,
+
+    // Poll-specific fields
+    List<OptionModel>? options,
+    int? totalVotes,
+    bool? userVoted,
+    String? userVoteOptionId,
+  }) {
+    return PollModel(
+      // PostModel fields
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      imageUrls: imageUrls ?? this.imageUrls,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
+      allowMultipleAnswers: allowMultipleAnswers ?? this.allowMultipleAnswers,
+      allowAddingOptions: allowAddingOptions ?? this.allowAddingOptions,
+      showResultsBeforeVoting:
+          showResultsBeforeVoting ?? this.showResultsBeforeVoting,
+      expiresAt: expiresAt ?? this.expiresAt,
+      authorUsername: authorUsername ?? this.authorUsername,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+
+      // Poll-specific fields
+      options: options ?? this.options,
+      totalVotes: totalVotes ?? this.totalVotes,
+      userVoted: userVoted ?? this.userVoted,
+      userVoteOptionId: userVoteOptionId ?? this.userVoteOptionId,
+    );
+  }
+
   // Updated mockData method
   static PollModel mockData({
     String? id,
@@ -193,7 +251,11 @@ class PollModel extends PostModel {
     }
   }
 
-  bool get hasExpired => isExpired;
+  bool get hasExpired {
+    if (expiresAt == null) return false;
+    return DateTime.now().isAfter(expiresAt!);
+  }
+
   bool get canVote => !userVoted && !hasExpired;
   bool get canSeeResults => showResultsBeforeVoting || userVoted || hasExpired;
 }

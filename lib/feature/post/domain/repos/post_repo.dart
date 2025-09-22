@@ -19,4 +19,10 @@ abstract class PostRepo {
 
   //Method to fetch poll details
   Future<PollModel> getPollById(String pollId);
+
+  //Method to vote on a poll
+  Future<void> voteOnPoll({
+    required String pollId,
+    required List<String> optionIds,
+  });
 }

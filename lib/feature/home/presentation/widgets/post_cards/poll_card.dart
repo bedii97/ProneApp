@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 
 import 'components/post_header.dart';
@@ -9,8 +8,9 @@ import 'components/poll_section.dart';
 
 class PollCard extends StatelessWidget {
   final PollModel poll;
+  final VoidCallback? onTap;
 
-  const PollCard({super.key, required this.poll});
+  const PollCard({super.key, required this.poll, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +19,10 @@ class PollCard extends StatelessWidget {
       elevation: 3.0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: InkWell(
-          onTap: () {
-            context.push('/poll/${poll.id}');
-          },
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

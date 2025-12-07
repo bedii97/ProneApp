@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:prone/core/extensions/timeago_extension.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
 

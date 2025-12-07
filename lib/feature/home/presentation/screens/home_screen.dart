@@ -9,6 +9,8 @@ import 'package:prone/feature/home/presentation/widgets/post_cards/poll_card.dar
 import 'package:prone/feature/home/presentation/widgets/post_cards/quiz_card.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_model.dart';
+import 'package:prone/feature/settings/presentation/cubits/settings_cubit.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:prone/l10n/app_localizations.dart';
 

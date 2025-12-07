@@ -13,9 +13,12 @@ import 'package:prone/l10n/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  _initializeTimeAgo();
 
   await dotenv.load(fileName: ".env");
 
@@ -25,6 +28,11 @@ void main() async {
   );
 
   runApp(const MyApp());
+}
+
+void _initializeTimeAgo() {
+  timeago.setLocaleMessages('tr', timeago.TrMessages());
+  timeago.setLocaleMessages('en', timeago.EnMessages());
 }
 
 class MyApp extends StatelessWidget {

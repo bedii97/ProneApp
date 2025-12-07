@@ -5,7 +5,6 @@ import 'package:prone/feature/post/presentation/cubits/poll_detail_cubit.dart';
 import 'package:prone/feature/post/presentation/cubits/poll_detail_state.dart';
 import 'package:prone/feature/post/presentation/screens/poll_detail_screen/widgets/poll_detail_error_widget.dart';
 import 'package:prone/feature/post/presentation/screens/poll_detail_screen/widgets/poll_detail_loaded_widget.dart';
-import 'package:prone/feature/settings/presentation/cubits/settings_cubit.dart';
 
 class PollDetailScreen extends StatelessWidget {
   final String pollId;
@@ -16,18 +15,15 @@ class PollDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Poll'),
+        title: const Text(
+          'Anket Detayı', // Görseldeki başlık
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<SettingsCubit>().toggleTheme();
-            },
-            icon: Icon(Icons.share),
-          ),
-        ],
+        // Share butonu görselde aşağıda olduğu için buradan kaldırdım
       ),
       body: BlocProvider(
         create: (context) =>

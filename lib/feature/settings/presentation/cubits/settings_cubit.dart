@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 part 'settings_state.dart';
 
@@ -44,6 +47,7 @@ class SettingsCubit extends Cubit<SettingsState> {
             .locale
             .languageCode; // Varsayılan dil İngilizce
     final themeData = isDarkMode ? AppTheme.dark : AppTheme.light;
+    timeago.setDefaultLocale(languageCode);
     emit(
       state.copyWith(
         themeData: themeData,
@@ -71,8 +75,9 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   // Dil değiştirme
   void changeLanguage(String newLanguageCode) {
+    log('Changing language to: $newLanguageCode');
+    timeago.setDefaultLocale(newLanguageCode);
     emit(state.copyWith(languageCode: newLanguageCode));
     _saveSettingsToPreferences();
-    // _authCubit.updateLocale(newLanguageCode);
   }
 }

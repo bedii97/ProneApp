@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:prone/core/extensions/timeago_extension.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
 
 class PostHeader extends StatelessWidget {
@@ -30,7 +31,7 @@ class PostHeader extends StatelessWidget {
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
-                DateFormat('d MMMM y, HH:mm').format(post.createdAt),
+                post.createdAt.timeAgo(context),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

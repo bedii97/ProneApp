@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:prone/feature/post/domain/models/option_model.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
-import 'package:prone/feature/post/presentation/widgets/selected_option_icon.dart';
 
 class PollOptionTile extends StatelessWidget {
   final PollModel poll;
   final OptionModel option;
   final VoidCallback? onTap;
   final bool isUserVoted;
+
   const PollOptionTile({
     super.key,
     required this.poll,
@@ -18,83 +18,67 @@ class PollOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Görseldeki gibi seçiliyse Primary (Mavi), değilse soluk border
+    final borderColor = isUserVoted
+        ? colorScheme.primary
+        : colorScheme.outline.withOpacity(0.3);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
+        color: theme.cardColor, // Tema uyumlu kart rengi
         border: Border.all(
-          // color: Theme.of(context).dividerColor,
-          color: isUserVoted
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).dividerColor,
+          color: borderColor,
+          width: isUserVoted ? 2 : 1, // Seçiliyse biraz daha kalın
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16), // Görseldeki gibi oval köşeler
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      option.text,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+              // Seçenek Metni
+              Expanded(
+                child: Text(
+                  option.text,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
-                  if (poll.canSeeResults) ...[
-                    Text(
-                      '${option.votes}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
 
+              const SizedBox(width: 12),
+
+              // Yüzde ve İkon Alanı
               if (poll.canSeeResults) ...[
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: FractionallySizedBox(
-                          widthFactor: option.percentage / 100,
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              // color: Theme.of(context).dividerColor,
-                              color: isUserVoted
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).dividerColor,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${option.percentage.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        // color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
+                Text(
+                  '%${option.percentage.toStringAsFixed(0)}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  ),
+                ),
+              ],
+
+              // Eğer kullanıcı buna oy vermişse Check ikonu göster
+              if (isUserVoted) ...[
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    size: 14,
+                    color: colorScheme.onPrimary,
+                  ),
                 ),
               ],
             ],

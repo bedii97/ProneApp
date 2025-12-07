@@ -43,6 +43,7 @@ dependencies:
   supabase_flutter: ^2.9.0
   shared_preferences: ^2.5.3
   flutter_dotenv: ^5.2.1
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:

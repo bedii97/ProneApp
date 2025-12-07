@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 
 import 'components/post_header.dart';

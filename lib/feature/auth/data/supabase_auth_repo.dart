@@ -54,9 +54,9 @@ class SupabaseAuthRepo extends AuthRepo {
     required String username,
     required String email,
     required String password,
-  }) {
+  }) async {
     try {
-      _supabase.auth.signUp(
+      await _supabase.auth.signUp(
         email: email,
         password: password,
         data: {'username': username},
@@ -64,23 +64,6 @@ class SupabaseAuthRepo extends AuthRepo {
       return getCurrentUser();
     } catch (e) {
       rethrow;
-    }
-  }
-
-  // Helper method to ensure user profile exists in public.users table
-  @Deprecated('Not used in the current implementation')
-  // ignore: unused_element
-  Future<void> _ensureUserProfile(User? user) async {
-    if (user == null) return;
-    try {
-      await _supabase.from('users').upsert({
-        'id': user.id,
-        'email': user.email,
-        'username': user.userMetadata?['username'] ?? "",
-        'updated_at': DateTime.now().toIso8601String(),
-      });
-    } catch (e) {
-      // Don't rethrow - this is not critical for login
     }
   }
 }

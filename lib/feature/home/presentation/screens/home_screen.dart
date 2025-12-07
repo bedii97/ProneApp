@@ -12,8 +12,19 @@ import 'package:prone/feature/post/domain/models/quiz_model.dart';
 
 import 'package:prone/l10n/app_localizations.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<HomeCubit>().fetchPosts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +42,17 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () {
               context.read<AuthCubit>().logout();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.usb_rounded),
+            onPressed: () {
+              context.read<AuthCubit>().currentUserName.then((username) {
+                final snackBar = SnackBar(
+                  content: Text('Current user: ${username ?? "Unknown"}'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              });
             },
           ),
         ],
@@ -54,10 +76,12 @@ class HomeScreen extends StatelessWidget {
                 },
               );
             } else if (state is HomeError) {
-              return Center(child: Text(state.message));
+              // return Center(child: Text(state.message));
+              return _buildErrorWidget(context, state.message);
             } else if (state is HomeEmpty) {
               return Center(child: Text("No Post"));
             }
+            //HomeInitial or other states
             return Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -74,6 +98,24 @@ class HomeScreen extends StatelessWidget {
           context.push(AppRouter.createPost);
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  _buildErrorWidget(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              context.read<HomeCubit>().fetchPosts();
+            },
+            child: Text("Retry"),
+          ),
+        ],
       ),
     );
   }

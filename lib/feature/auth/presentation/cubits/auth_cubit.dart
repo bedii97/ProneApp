@@ -10,6 +10,11 @@ class AuthCubit extends Cubit<app_auth.AuthState> {
 
   AuthCubit(this._authService) : super(app_auth.AuthInitial());
 
+  Future<String?> get currentUserName async {
+    final user = await _authService.getCurrentUser();
+    return user?.username;
+  }
+
   // Check authentication status on app start
   Future<void> checkAuthStatus() async {
     emit(app_auth.AuthLoading());
@@ -53,17 +58,15 @@ class AuthCubit extends Cubit<app_auth.AuthState> {
     emit(app_auth.AuthLoading()); // İşlem başlıyor
 
     try {
-      await _authService.registerWithEmailPassword(
+      final user = await _authService.registerWithEmailPassword(
         email: email,
         password: password,
         username: username,
       );
 
-      final user = Supabase.instance.client.auth.currentUser;
+      // final user2 = Supabase.instance.client.auth.currentUser;
       if (user != null) {
-        emit(
-          app_auth.AuthAuthenticated(userId: user.id, email: user.email ?? ''),
-        );
+        emit(app_auth.AuthAuthenticated(userId: user.id, email: user.email));
       } else {
         // Kullanıcı null ise bu bir hata durumudur
         emit(app_auth.AuthFailure('Kayıt yapılamadı. Lütfen tekrar deneyin.'));

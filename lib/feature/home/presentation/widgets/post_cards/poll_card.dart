@@ -8,7 +8,7 @@ import 'components/post_footer.dart';
 import 'components/poll_section.dart';
 
 class PollCard extends StatelessWidget {
-  final PollModel poll; // ✅ PollModel al
+  final PollModel poll;
 
   const PollCard({super.key, required this.poll});
 
@@ -28,18 +28,17 @@ class PollCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PostHeader(post: poll), // ✅ poll polymorphic olarak geçer
+              PostHeader(post: poll),
               const SizedBox(height: 16),
 
-              PostContent(post: poll), // ✅ poll polymorphic olarak geçer
+              PostContent(post: poll),
               const SizedBox(height: 16),
 
-              // ✅ Direkt PollSection kullan
               PollSection(poll: poll),
 
               const SizedBox(height: 12),
 
-              PostFooter(post: poll), // ✅ poll polymorphic olarak geçer
+              PostFooter(post: poll),
             ],
           ),
         ),

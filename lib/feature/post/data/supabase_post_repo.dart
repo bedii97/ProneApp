@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:prone/core/constants/supabase_constants.dart';
@@ -160,21 +161,38 @@ class SupabasePostRepo extends PostRepo {
   @override
   Future<List<PostModel>> fetchPosts({int offset = 0, int limit = 10}) async {
     try {
+      final response = await _supabase.functions.invoke(
+        'fetch-home-posts',
+        body: {'offset': offset, 'limit': limit},
+      );
+
+      if (response.status != 200) {
+        throw Exception('Function error: ${response.status}');
+      }
+
+      final List<dynamic> data = response.data;
+
+      return data.map((e) => PostModel.fromJson(e)).toList();
+    } catch (e, stackTrace) {
+      log(
+        'Error fetching posts via Edge Function',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PollModel> getPollById(String pollId) async {
+    try {
+      final currentUserId = _getCurrentUser()?.id;
+
+      // Ana poll datasını çek
       final response = await _supabase
           .from(SupabaseConstants.POSTS_TABLE)
           .select('''
-          id,
-          user_id,
-          post_type,
-          title,
-          body,
-          allow_multiple_answers,
-          allow_adding_options,
-          show_results_before_voting,
-          expires_at,
-          status,
-          created_at,
-          updated_at,
+          *,
           users!posts_user_id_fkey (
             username,
             avatar_url
@@ -185,85 +203,46 @@ class SupabasePostRepo extends PostRepo {
             user_votes!user_votes_option_id_fkey (
               count
             )
-          ),
-          quiz_questions (
-            id,
-            question_text,
-            order_index,
-            quiz_options (
-              id,
-              option_text,
-              quiz_result_mappings (
-                points,
-                quiz_results (
-                  id
-                )
-              )
-            )
-          ),
-          quiz_results (
-            id,
-            title,
-            description,
-            image_url
-          ),
-          user_votes!user_votes_post_id_fkey (
-            option_id
-          ),
-          quiz_completions!quiz_completions_post_id_fkey (
-            result_id,
-            total_points
           )
-        ''')
-          .eq('status', PostStatus.published.name)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
-
-      inspect(response.toString());
-
-      final List<PostModel> posts = [];
-
-      for (final postData in response as List) {
-        final post = PostModel.fromJson(postData);
-        posts.add(post);
-      }
-
-      return posts;
-    } catch (e, stackTrace) {
-      log('Error fetching posts', error: e, stackTrace: stackTrace);
-      throw Exception('Failed to fetch posts: $e');
-    }
-  }
-
-  @override
-  Future<PollModel> getPollById(String pollId) async {
-    try {
-      final response = await _supabase
-          .from(SupabaseConstants.POSTS_TABLE)
-          .select('''
-          *,
-          users!posts_user_id_fkey (
-          username,
-          avatar_url
-        ),
-          poll_options (
-            id,
-            option_text,
-            user_votes!user_votes_option_id_fkey (
-              count
-            )
-          ),
-          user_votes!user_votes_post_id_fkey (
-            option_id
-          ).sum()
         ''')
           .eq('id', pollId)
           .single();
-      inspect(response.toString());
+
+      // Current user'ın vote'unu ayrı query ile çek
+      List<Map<String, dynamic>> userVotes = [];
+      if (currentUserId != null) {
+        userVotes = await _supabase
+            .from(SupabaseConstants.VOTES_TABLE)
+            .select('option_id')
+            .eq('post_id', pollId)
+            .eq('user_id', currentUserId);
+      }
+
+      response['user_votes'] = userVotes;
+      inspect(jsonEncode(response));
+      log('Fetched poll data: $response');
       return PollModel.fromJson(response);
     } catch (e, stackTrace) {
       log('Error fetching poll', error: e, stackTrace: stackTrace);
       throw Exception('Failed to fetch poll: $e');
+    }
+  }
+
+  @override
+  Future<void> voteOnPoll({
+    required String pollId,
+    required List<String> optionIds,
+  }) async {
+    //Todo: It will support multiple votes in the future
+    try {
+      await _supabase.from(SupabaseConstants.VOTES_TABLE).upsert({
+        'post_id': pollId,
+        'option_id': optionIds.first,
+        'user_id': _getCurrentUser()?.id,
+      }).select();
+    } catch (e, stackTrace) {
+      log('Error voting on poll', error: e, stackTrace: stackTrace);
+      throw Exception('Failed to vote on poll: $e');
     }
   }
 }

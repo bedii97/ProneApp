@@ -27,68 +27,78 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => SupabaseAuthRepo()),
+        RepositoryProvider(create: (context) => SupabasePostRepo()),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) =>
+                AuthCubit(context.read<SupabaseAuthRepo>())..checkAuthStatus(),
+          ),
+          BlocProvider(create: (context) => SettingsCubit()),
+          BlocProvider(
+            create: (context) => PostCubit(context.read<SupabasePostRepo>()),
+          ),
+          BlocProvider(
+            create: (context) =>
+                HomeCubit(postRepo: context.read<SupabasePostRepo>()),
+          ),
+        ],
+        child: const AppView(),
+      ),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
-  //Cubits
-  late final AuthCubit _authCubit;
-  late final SettingsCubit _settingsCubit;
-  late final PostCubit _postCubit;
-  late final HomeCubit _homeCubit;
-  //Router
+class AppView extends StatefulWidget {
+  const AppView({super.key});
+
+  @override
+  State<AppView> createState() => _AppViewState();
+}
+
+class _AppViewState extends State<AppView> {
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
-    _authCubit = AuthCubit(SupabaseAuthRepo())..checkAuthStatus();
-    _settingsCubit = SettingsCubit();
-    _postCubit = PostCubit(SupabasePostRepo());
-    _homeCubit = HomeCubit(postRepo: SupabasePostRepo());
-    _router = AppRouter.router(_authCubit);
+    final authCubit = context.read<AuthCubit>();
+    _router = AppRouter.router(authCubit);
   }
 
   @override
   void dispose() {
-    _authCubit.close();
-    _settingsCubit.close();
-    _postCubit.close();
-    _homeCubit.close();
     _router.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: _authCubit),
-        BlocProvider.value(value: _settingsCubit),
-        BlocProvider.value(value: _postCubit),
-        BlocProvider.value(value: _homeCubit),
-      ],
-      child: BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, state) {
-          return MaterialApp.router(
-            title: 'Prone',
-            theme: state.themeData,
-            routerConfig: _router, // Sabit router kullan
-            supportedLocales: L10n.all,
-            locale: Locale(state.languageCode),
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-          );
-        },
-      ),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        return MaterialApp.router(
+          title: 'Prone',
+          theme: state.themeData,
+          routerConfig: _router,
+          supportedLocales: L10n.all,
+          locale: Locale(state.languageCode),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        );
+      },
     );
   }
 }

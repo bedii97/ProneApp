@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:prone/core/extensions/color_extension.dart';
 import 'package:prone/feature/post/domain/models/option_model.dart';
+import 'package:prone/feature/post/presentation/widgets/selected_option_icon.dart';
 
 class PollOption extends StatelessWidget {
   final OptionModel option;
@@ -44,7 +45,7 @@ class PollOption extends StatelessWidget {
             ).colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation<Color>(
               isSelectedOption
-                  ? Theme.of(context).colorScheme.primary
+                  ? Theme.of(context).colorScheme.primary.withOpacityD(0.8)
                   : Theme.of(context).colorScheme.primary.withOpacityD(0.3),
             ),
           ),
@@ -74,13 +75,8 @@ class PollOption extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    if (isSelectedOption) const SizedBox(width: 8),
-                    if (isSelectedOption)
-                      Icon(
-                        Icons.check_circle,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 18,
-                      ),
+                    // if (isSelectedOption) const SizedBox(width: 8),
+                    // if (isSelectedOption) SelectedOptionIcon(),
                   ],
                 ),
               ],

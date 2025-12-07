@@ -35,48 +35,24 @@ class PollModel extends PostModel {
   }) : super(type: PostType.poll);
 
   factory PollModel.fromJson(Map<String, dynamic> json) {
-    // Author bilgisi
+    // 1. Author Bilgisi
     final usersData = json['users'] as Map<String, dynamic>? ?? {};
 
-    // Poll options'ları işle
-    final pollOptionsData = json['poll_options'] as List<dynamic>? ?? [];
-    List<OptionModel> options = [];
+    // 2. Seçenekleri ve Yüzdeleri Hesapla (Yardımcı Metot Kullanımı)
+    final rawOptions = json['poll_options'] as List<dynamic>? ?? [];
+    final processedOptions = _calculateOptionsWithPercentages(rawOptions);
 
-    for (final optionData in pollOptionsData) {
-      // Vote count'u hesapla
-      final userVotesData = optionData['user_votes'] as List<dynamic>? ?? [];
-      final voteCount = userVotesData.isNotEmpty
-          ? (userVotesData.first['count'] as int? ?? 0)
-          : 0;
-
-      options.add(
-        OptionModel(
-          id: optionData['id'] as String,
-          text: optionData['option_text'] as String,
-          votes: voteCount,
-          percentage: 0.0, // Sonra hesaplanacak
-        ),
-      );
-    }
-
-    final totalVotes = options.fold<int>(
+    // 3. Toplam Oy Sayısını Hesapla (Fold ile)
+    final totalVotes = processedOptions.fold<int>(
       0,
       (sum, option) => sum + option.votes,
     );
 
-    // Percentage'ları hesapla
-    for (int i = 0; i < options.length; i++) {
-      final percentage = totalVotes > 0
-          ? (options[i].votes / totalVotes * 100)
-          : 0.0;
-      options[i] = options[i].copyWith(percentage: percentage);
-    }
-
-    // User'ın vote durumu - BU KISIM DÜZELTILDI
+    // 4. Kullanıcının Oy Durumu (Current User Vote)
+    // Edge function veya join query'den gelen 'user_votes' listesini kontrol et
     final userVotesData = json['user_votes'] as List<dynamic>? ?? [];
     String? userVoteOptionId;
 
-    // user_votes boş değilse ve içinde data varsa
     if (userVotesData.isNotEmpty) {
       final firstVote = userVotesData.first as Map<String, dynamic>?;
       userVoteOptionId = firstVote?['option_id'] as String?;
@@ -85,15 +61,17 @@ class PollModel extends PostModel {
     final userVoted = userVoteOptionId != null;
 
     return PollModel(
-      // Base fields
+      // --- PostModel Base Fields ---
       id: json['id'] as String?,
       userId: json['user_id'] as String,
       title: json['title'] as String,
       body: json['body'] as String?,
+      // Tarihleri güvenli parse et
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      // Enum dönüşümü (Güvenli)
       status: PostStatus.values.firstWhere(
         (e) => e.name == (json['status'] as String? ?? 'published'),
         orElse: () => PostStatus.published,
@@ -108,12 +86,52 @@ class PollModel extends PostModel {
       authorUsername: usersData['username'] as String? ?? 'Unknown',
       authorAvatarUrl: usersData['avatar_url'] as String?,
 
-      // Poll-specific fields
-      options: options,
+      // --- PollModel Specific Fields ---
+      options: processedOptions,
       totalVotes: totalVotes,
       userVoted: userVoted,
       userVoteOptionId: userVoteOptionId,
     );
+  }
+
+  /// Seçenekleri işleyen, oy sayılarını toplayan ve yüzdeleri hesaplayan
+  /// yardımcı metot. Kod karmaşasını önler.
+  static List<OptionModel> _calculateOptionsWithPercentages(
+    List<dynamic> rawOptions,
+  ) {
+    List<OptionModel> tempOptions = [];
+    int localTotal = 0;
+
+    // 1. Adım: Ham veriden OptionModel oluştur ve toplam oyu bul
+    for (final optionData in rawOptions) {
+      // Supabase count sorgusundan gelen veri yapısı:
+      // user_votes: [{'count': 5}] şeklinde bir liste döner.
+      final votesList = optionData['user_votes'] as List<dynamic>? ?? [];
+
+      final int voteCount = votesList.isNotEmpty
+          ? (votesList.first['count'] as int? ?? 0)
+          : 0;
+
+      localTotal += voteCount;
+
+      tempOptions.add(
+        OptionModel(
+          id: optionData['id'] as String,
+          text: optionData['option_text'] as String,
+          votes: voteCount,
+          percentage: 0.0, // Geçici değer, aşağıda güncellenecek
+        ),
+      );
+    }
+
+    // 2. Adım: Yüzdeleri hesapla ve güncelle
+    // Eğer hiç oy yoksa (localTotal == 0), tüm yüzdeler 0 kalır.
+    if (localTotal == 0) return tempOptions;
+
+    return tempOptions.map((opt) {
+      final double percentage = (opt.votes / localTotal) * 100;
+      return opt.copyWith(percentage: percentage);
+    }).toList();
   }
 
   @override
@@ -200,39 +218,6 @@ class PollModel extends PostModel {
       totalVotes: totalVotes ?? this.totalVotes,
       userVoted: userVoted ?? this.userVoted,
       userVoteOptionId: userVoteOptionId ?? this.userVoteOptionId,
-    );
-  }
-
-  // Updated mockData method
-  static PollModel mockData({
-    String? id,
-    String? title,
-    String? body,
-    String? userId,
-    DateTime? createdAt,
-    PostStatus status = PostStatus.published,
-  }) {
-    return PollModel(
-      // PostModel fields
-      id: id ?? 'poll_${DateTime.now().millisecondsSinceEpoch}',
-      userId: userId ?? 'user_123',
-      title: title ?? 'Sample Poll',
-      body: body ?? 'This is a sample poll description.',
-      createdAt: createdAt ?? DateTime.now(),
-      status: status,
-      allowMultipleAnswers: false,
-      allowAddingOptions: false,
-      showResultsBeforeVoting: true,
-      authorUsername: 'test_user',
-
-      // Poll-specific fields
-      totalVotes: 5,
-      options: [
-        OptionModel(id: 'option_1', text: 'Option 1', votes: 3, percentage: 60),
-        OptionModel(id: 'option_2', text: 'Option 2', votes: 2, percentage: 40),
-      ],
-      userVoted: true,
-      userVoteOptionId: 'option_1',
     );
   }
 

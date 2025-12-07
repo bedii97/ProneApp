@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:prone/core/constants/supabase_constants.dart';
@@ -160,83 +161,25 @@ class SupabasePostRepo extends PostRepo {
   @override
   Future<List<PostModel>> fetchPosts({int offset = 0, int limit = 10}) async {
     try {
-      final currentUserId = _getCurrentUser()?.id;
+      final response = await _supabase.functions.invoke(
+        'fetch-home-posts',
+        body: {'offset': offset, 'limit': limit},
+      );
 
-      final response = await _supabase
-          .from(SupabaseConstants.POSTS_TABLE)
-          .select('''
-          id,
-          user_id,
-          post_type,
-          title,
-          body,
-          allow_multiple_answers,
-          allow_adding_options,
-          show_results_before_voting,
-          expires_at,
-          status,
-          created_at,
-          updated_at,
-          users!posts_user_id_fkey (
-            username,
-            avatar_url
-          ),
-          poll_options (
-            id,
-            option_text,
-            user_votes!user_votes_option_id_fkey (
-              count
-            )
-          ),
-          quiz_questions (
-            id,
-            question_text,
-            order_index,
-            quiz_options (
-              id,
-              option_text,
-              quiz_result_mappings (
-                points,
-                quiz_results (
-                  id
-                )
-              )
-            )
-          ),
-          quiz_results (
-            id,
-            title,
-            description,
-            image_url
-          )
-        ''')
-          .eq('status', PostStatus.published.name)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
-
-      final List<PostModel> posts = [];
-
-      for (final postData in response as List) {
-        // Her post için current user'ın vote'unu ayrı çek
-        List<Map<String, dynamic>> userVotes = [];
-        if (currentUserId != null) {
-          userVotes = await _supabase
-              .from(SupabaseConstants.VOTES_TABLE)
-              .select('option_id, user_id')
-              .eq('post_id', postData['id'])
-              .eq('user_id', currentUserId);
-        }
-
-        // user_votes'u postData'ya ekle
-        postData['user_votes'] = userVotes;
-
-        final post = PostModel.fromJson(postData);
-        posts.add(post);
+      if (response.status != 200) {
+        throw Exception('Function error: ${response.status}');
       }
-      return posts;
+
+      final List<dynamic> data = response.data;
+
+      return data.map((e) => PostModel.fromJson(e)).toList();
     } catch (e, stackTrace) {
-      log('Error fetching posts', error: e, stackTrace: stackTrace);
-      throw Exception('Failed to fetch posts: $e');
+      log(
+        'Error fetching posts via Edge Function',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     }
   }
 
@@ -276,6 +219,7 @@ class SupabasePostRepo extends PostRepo {
       }
 
       response['user_votes'] = userVotes;
+      inspect(jsonEncode(response));
       log('Fetched poll data: $response');
       return PollModel.fromJson(response);
     } catch (e, stackTrace) {

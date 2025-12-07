@@ -12,12 +12,22 @@ import 'package:prone/feature/post/domain/models/quiz_model.dart';
 
 import 'package:prone/l10n/app_localizations.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
     context.read<HomeCubit>().fetchPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.homeScreen),
@@ -66,7 +76,8 @@ class HomeScreen extends StatelessWidget {
                 },
               );
             } else if (state is HomeError) {
-              return Center(child: Text(state.message));
+              // return Center(child: Text(state.message));
+              return _buildErrorWidget(context, state.message);
             } else if (state is HomeEmpty) {
               return Center(child: Text("No Post"));
             }
@@ -87,6 +98,24 @@ class HomeScreen extends StatelessWidget {
           context.push(AppRouter.createPost);
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  _buildErrorWidget(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              context.read<HomeCubit>().fetchPosts();
+            },
+            child: Text("Retry"),
+          ),
+        ],
       ),
     );
   }

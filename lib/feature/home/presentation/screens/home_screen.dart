@@ -9,8 +9,6 @@ import 'package:prone/feature/home/presentation/widgets/post_cards/poll_card.dar
 import 'package:prone/feature/home/presentation/widgets/post_cards/quiz_card.dart';
 import 'package:prone/feature/post/domain/models/poll_model.dart';
 import 'package:prone/feature/post/domain/models/quiz_model.dart';
-import 'package:prone/feature/settings/presentation/cubits/settings_cubit.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:prone/l10n/app_localizations.dart';
 
@@ -59,41 +57,49 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            if (state is HomeLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is HomeLoaded) {
-              return ListView.builder(
+      body: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          if (state is HomeLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is HomeLoaded) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<HomeCubit>().fetchPosts();
+              },
+              child: ListView.builder(
                 itemCount: state.posts.length,
                 itemBuilder: (context, index) {
                   final post = state.posts[index];
                   if (post is PollModel) {
-                    return PollCard(poll: post);
+                    return PollCard(
+                      poll: post,
+                      onTap: () {
+                        context.push('/poll/${post.id}');
+                      },
+                    );
                   } else if (post is QuizModel) {
                     return QuizCard(quiz: post);
                   }
                   return const SizedBox.shrink();
                 },
-              );
-            } else if (state is HomeError) {
-              // return Center(child: Text(state.message));
-              return _buildErrorWidget(context, state.message);
-            } else if (state is HomeEmpty) {
-              return Center(child: Text("No Post"));
-            }
-            //HomeInitial or other states
-            return Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  context.read<HomeCubit>().fetchPosts();
-                },
-                child: Text("Retry"),
               ),
             );
-          },
-        ),
+          } else if (state is HomeError) {
+            // return Center(child: Text(state.message));
+            return _buildErrorWidget(context, state.message);
+          } else if (state is HomeEmpty) {
+            return Center(child: Text("No Post"));
+          }
+          //HomeInitial or other states
+          return Center(
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<HomeCubit>().fetchPosts();
+              },
+              child: Text("Retry"),
+            ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

@@ -10,7 +10,7 @@ import 'package:prone/feature/post/presentation/screens/create_poll_screen.dart'
 import 'package:prone/feature/post/presentation/screens/create_post_screen.dart';
 import 'package:prone/feature/post/presentation/screens/create_quiz_screen.dart';
 import 'package:prone/feature/post/presentation/screens/poll_detail_screen/poll_detail_screen.dart';
-import 'package:prone/feature/settings/presentation/screens/settings_page.dart';
+import 'package:prone/feature/settings/presentation/screens/settings_screen.dart';
 
 class AppRouter {
   static const String auth = '/auth';

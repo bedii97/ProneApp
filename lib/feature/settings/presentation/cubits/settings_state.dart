@@ -1,12 +1,12 @@
 part of 'settings_cubit.dart';
 
-class SettingsState {
+class SettingsState extends Equatable {
   final ThemeData themeData;
   final bool isDarkMode;
   final bool notificationsEnabled;
   final String languageCode;
 
-  SettingsState({
+  const SettingsState({
     required this.themeData,
     required this.isDarkMode,
     required this.notificationsEnabled,
@@ -26,4 +26,13 @@ class SettingsState {
       languageCode: languageCode ?? this.languageCode,
     );
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [
+    themeData,
+    isDarkMode,
+    notificationsEnabled,
+    languageCode,
+  ];
 }

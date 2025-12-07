@@ -1,5 +1,4 @@
-import 'dart:developer';
-
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +74,6 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   // Dil değiştirme
   void changeLanguage(String newLanguageCode) {
-    log('Changing language to: $newLanguageCode');
     timeago.setDefaultLocale(newLanguageCode);
     emit(state.copyWith(languageCode: newLanguageCode));
     _saveSettingsToPreferences();

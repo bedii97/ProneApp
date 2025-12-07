@@ -18,11 +18,12 @@ class SettingsScreen extends StatelessWidget {
           Icon(Icons.settings, size: 100),
           const Divider(height: 30, thickness: 5),
           // Tema
-          BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, state) {
+          BlocSelector<SettingsCubit, SettingsState, bool>(
+            selector: (state) => state.isDarkMode,
+            builder: (context, isDarkMode) {
               return SwitchListTile(
-                value: state
-                    .isDarkMode, // Varsayılan tema durumu (örneğin: false = açık tema)
+                value:
+                    isDarkMode, // Varsayılan tema durumu (örneğin: false = açık tema)
                 onChanged: (bool value) {
                   // Tema değiştirme
                   context.read<SettingsCubit>().toggleTheme();
@@ -35,15 +36,16 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
 
           // Dil Seçeneği
-          BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, state) {
+          BlocSelector<SettingsCubit, SettingsState, String>(
+            selector: (state) => state.languageCode,
+            builder: (context, languageCode) {
               return ListTile(
                 leading: const Icon(Icons.language),
                 title: Text(AppLocalizations.of(context)!.language),
                 subtitle: Text(
-                  state.languageCode == 'en'
+                  languageCode == 'en'
                       ? 'English'
-                      : state.languageCode == 'tr'
+                      : languageCode == 'tr'
                       ? 'Türkçe'
                       : 'Unknown',
                 ),
@@ -53,26 +55,7 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
-          // Hesap Ayarları
-          // ListTile(
-          //   leading: const Icon(Icons.person),
-          //   title: Text(AppLocalizations.of(context)!.accountSettings),
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) {
-          //           return BlocProvider(
-          //             create: (context) =>
-          //                 UserCubit(userRepo: SupabaseUserRepo()),
-          //             child: const AccountSettingsScreen(),
-          //           );
-          //         },
-          //       ),
-          //     );
-          //     // Navigator.pop(context);
-          //   },
-          // ),
+
           const Divider(),
           // Çıkış Yap
           ListTile(

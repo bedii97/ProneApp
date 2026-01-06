@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/option_model.dart';
-import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/option_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 
 class PollOptionTile extends StatelessWidget {
   final PollModel poll;

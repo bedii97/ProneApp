@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 
 import 'components/post_header.dart';
 import 'components/post_content.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_result_model.dart';
 
 class QuizPreviewDialog extends StatelessWidget {
   final QuizResultModel result;

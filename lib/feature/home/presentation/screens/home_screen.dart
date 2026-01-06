@@ -7,8 +7,8 @@ import 'package:prone/feature/home/presentation/cubits/home_cubit.dart';
 import 'package:prone/feature/home/presentation/cubits/home_state.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/poll_card.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/quiz_card.dart';
-import 'package:prone/feature/post/domain/models/poll_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_model.dart';
 
 import 'package:prone/l10n/app_localizations.dart';
 
@@ -78,7 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     );
                   } else if (post is QuizModel) {
-                    return QuizCard(quiz: post);
+                    return QuizCard(
+                      quiz: post,
+                      onQuizStart: () {
+                        context.push('/quiz/${post.id}');
+                      },
+                    );
                   }
                   return const SizedBox.shrink();
                 },

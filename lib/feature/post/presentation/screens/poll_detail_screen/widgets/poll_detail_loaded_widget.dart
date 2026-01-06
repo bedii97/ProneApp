@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:prone/core/extensions/timeago_extension.dart';
-import 'package:prone/feature/post/domain/models/option_model.dart';
-import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/option_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 import 'package:prone/feature/post/presentation/screens/poll_detail_screen/widgets/poll_option_tile.dart';
 
 class PollDetailLoadedWidget extends StatelessWidget {

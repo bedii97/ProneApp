@@ -1,8 +1,8 @@
-import 'package:prone/feature/post/domain/models/quiz_option_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_option_model.dart';
 
 class QuizQuestionModel {
-  final String id;
-  final String questionText;
+  final String id; //TMM
+  final String questionText; //TMM
   final int orderIndex; // Soru sırası (database'de var)
   final List<QuizOptionModel>
   options; // Değişti: List<String> -> List<QuizOptionModel>
@@ -92,15 +92,6 @@ class QuizQuestionModel {
   }
 
   int get optionCount => options.length;
-
-  // Get all result IDs that any option maps to
-  Set<String> getAllMappedResultIds() {
-    final Set<String> resultIds = {};
-    for (final option in options) {
-      resultIds.addAll(option.mappedResultIds);
-    }
-    return resultIds;
-  }
 
   // Helper function for list equality
   bool _listEquals(List<QuizOptionModel> list1, List<QuizOptionModel> list2) {

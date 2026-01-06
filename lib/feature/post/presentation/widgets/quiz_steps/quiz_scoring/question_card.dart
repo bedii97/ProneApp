@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
-import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_scoring/option_scoring.dart';
 
@@ -31,7 +31,7 @@ class QuestionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.blue[100],
+                // color: Colors.blue[100],
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -41,7 +41,7 @@ class QuestionCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.blue[700],
+                  // color: Colors.blue[700],
                 ),
               ),
             ),

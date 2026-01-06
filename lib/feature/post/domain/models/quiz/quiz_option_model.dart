@@ -1,7 +1,7 @@
 class QuizOptionModel {
   final String id;
   final String text;
-  final String questionId;
+  final String? questionId;
 
   // Quiz result mappings (option_id -> result_id -> points)
   final Map<String, int> resultMappings; // resultId -> points

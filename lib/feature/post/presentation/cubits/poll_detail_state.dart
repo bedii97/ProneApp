@@ -1,4 +1,4 @@
-import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 
 abstract class PollDetailState {
   const PollDetailState();

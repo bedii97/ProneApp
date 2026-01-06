@@ -1,7 +1,7 @@
-import 'package:prone/feature/post/domain/models/quiz_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_result_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_scoring_model.dart';
 
 enum FormStatus {
   initial,

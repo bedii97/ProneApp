@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prone/feature/post/domain/models/quiz_scoring_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_scoring_model.dart';
 import '../create_quiz_state.dart';
 
 mixin ScoringManagementMixin on Cubit<CreateQuizState> {

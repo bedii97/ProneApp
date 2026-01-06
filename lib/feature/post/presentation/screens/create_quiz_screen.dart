@@ -12,7 +12,7 @@ class CreateQuizScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CreateQuizCubit(SupabasePostRepo()),
+      create: (context) => CreateQuizCubit(context.read<SupabasePostRepo>()),
       child: const CreateQuizView(),
     );
   }
@@ -97,15 +97,13 @@ class _CreateQuizViewState extends State<CreateQuizView> {
             ),
           ],
         ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: 'Tamam',
-          textColor: Colors.white,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
+        duration: const Duration(seconds: 2),
+        // action: SnackBarAction(
+        //   label: 'Tamam',
+        //   onPressed: () {
+        //     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //   },
+        // ),
       ),
     );
   }
@@ -142,7 +140,6 @@ class _CreateQuizViewState extends State<CreateQuizView> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Çık'),
             ),
           ],
@@ -304,14 +301,10 @@ class _CreateQuizViewState extends State<CreateQuizView> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: (state.step + 1) / 5,
-                          backgroundColor: Colors.grey[300],
-                        ),
+                        LinearProgressIndicator(value: (state.step + 1) / 5),
                       ],
                     ),
                   );
@@ -333,15 +326,7 @@ class _CreateQuizViewState extends State<CreateQuizView> {
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withAlpha(50),
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
+                      color: Theme.of(context).scaffoldBackgroundColor,
                     ),
                     child: Row(
                       children: [

@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:prone/core/constants/supabase_constants.dart';
-import 'package:prone/feature/post/domain/models/create_poll_model.dart';
-import 'package:prone/feature/post/domain/models/create_quiz_model.dart';
-import 'package:prone/feature/post/domain/models/poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/create_poll_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/create_quiz_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_result_model.dart';
 
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,12 +51,6 @@ class SupabasePostRepo extends PostRepo {
       inspect(e);
       throw Exception('Post creation failed: $e');
     }
-  }
-
-  @override
-  Future<Map<String, dynamic>> fetchPostById(String postId) {
-    // TODO: implement fetchPostById
-    throw UnimplementedError();
   }
 
   User? _getCurrentUser() {
@@ -171,8 +166,11 @@ class SupabasePostRepo extends PostRepo {
       }
 
       final List<dynamic> data = response.data;
+      inspect(data.toString());
 
-      return data.map((e) => PostModel.fromJson(e)).toList();
+      final deneme = data.map((e) => PostModel.fromJson(e)).toList();
+      inspect(deneme);
+      return deneme;
     } catch (e, stackTrace) {
       log(
         'Error fetching posts via Edge Function',
@@ -243,6 +241,54 @@ class SupabasePostRepo extends PostRepo {
     } catch (e, stackTrace) {
       log('Error voting on poll', error: e, stackTrace: stackTrace);
       throw Exception('Failed to vote on poll: $e');
+    }
+  }
+
+  @override
+  Future<QuizModel?> getQuizById(String quizId) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'get-quiz-details',
+        body: {'quizId': quizId},
+      );
+
+      final Map<String, dynamic> responseData = response.data;
+
+      if (responseData['success'] == true) {
+        inspect(responseData['data']);
+        return QuizModel.fromJson(responseData['data']);
+      } else {
+        throw Exception(responseData['error']);
+      }
+    } catch (e) {
+      print('Hata oluştu: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<QuizResultModel?> submitQuiz({
+    required String quizId,
+    required Map<String, String> answers, // {questionId: optionId}
+  }) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'submit-quiz',
+        body: {'quizId': quizId, 'answers': answers},
+      );
+
+      final responseData = response.data;
+
+      if (responseData['success'] == true && responseData['result'] != null) {
+        // Backend'den gelen sonucu modele çevir
+        return QuizResultModel.fromJson(responseData['result']);
+      } else {
+        throw Exception(responseData['error'] ?? 'Sonuç hesaplanamadı.');
+      }
+    } catch (e) {
+      // Hata yönetimi (Loglama vs.)
+      print('Submit error: $e');
+      rethrow;
     }
   }
 }

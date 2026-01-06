@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
 import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_option_item.dart';
 

@@ -27,7 +27,7 @@ class OptionScoring extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        // color: Colors.grey[50],
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),

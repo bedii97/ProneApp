@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/quiz_result_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_result_model.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_result_card_form.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_result_card_header.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/components/quiz_result_card_preview.dart';

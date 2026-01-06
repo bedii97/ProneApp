@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:prone/core/utils/quiz_validator.dart';
 import '../create_quiz_state.dart';
 
@@ -200,7 +202,11 @@ class CreateQuizValidator {
         );
 
         // Her result için puan verilmiş mi?
+        //Todo: 0 puan verilmiş seçeneklere izin vermiyor, QuizScoringModel de de map değiştirilmeli
         for (final result in state.results) {
+          log(result.title);
+          log(result.id);
+          log((!scoring.resultPoints.containsKey(result.id)).toString());
           if (!scoring.resultPoints.containsKey(result.id)) {
             errors['scoring_incomplete'] =
                 'Tüm seçenekler için puanlama tamamlanmalıdır';

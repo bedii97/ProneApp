@@ -10,6 +10,7 @@ import 'package:prone/feature/post/presentation/screens/create_poll_screen.dart'
 import 'package:prone/feature/post/presentation/screens/create_post_screen.dart';
 import 'package:prone/feature/post/presentation/screens/create_quiz_screen.dart';
 import 'package:prone/feature/post/presentation/screens/poll_detail_screen/poll_detail_screen.dart';
+import 'package:prone/feature/post/presentation/screens/quiz_detail_screen/screens/quiz_detail_screen.dart';
 import 'package:prone/feature/settings/presentation/screens/settings_screen.dart';
 
 class AppRouter {
@@ -88,6 +89,14 @@ class AppRouter {
           builder: (context, state) {
             final pollId = state.pathParameters['id'] ?? '';
             return PollDetailScreen(pollId: pollId);
+          },
+        ),
+        GoRoute(
+          path: quizDetail,
+          name: 'quizDetail',
+          builder: (context, state) {
+            final quizId = state.pathParameters['id'] ?? '';
+            return QuizDetailScreen(quizId: quizId);
           },
         ),
       ],

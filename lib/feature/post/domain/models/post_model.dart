@@ -1,5 +1,5 @@
-import 'package:prone/feature/post/domain/models/poll_model.dart';
-import 'package:prone/feature/post/domain/models/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_model.dart';
 
 enum PostType { poll, quiz }
 
@@ -65,8 +65,6 @@ abstract class PostModel {
   // Utility getters
   bool get isDraft => status == PostStatus.draft;
   bool get isPublished => status == PostStatus.published;
-  bool get isPoll => type == PostType.poll;
-  bool get isQuiz => type == PostType.quiz;
   bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 
   // Type-safe casting helpers

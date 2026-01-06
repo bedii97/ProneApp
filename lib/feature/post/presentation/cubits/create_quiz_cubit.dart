@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prone/feature/post/domain/models/quiz_question_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
 
 // Helpers

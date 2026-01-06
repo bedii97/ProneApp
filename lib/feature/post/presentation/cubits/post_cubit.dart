@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prone/feature/post/domain/models/create_poll_model.dart';
+import 'package:prone/feature/post/domain/models/poll/create_poll_model.dart';
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
 import 'package:prone/feature/post/presentation/cubits/post_state.dart';
 

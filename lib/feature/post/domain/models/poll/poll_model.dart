@@ -1,4 +1,4 @@
-import 'package:prone/feature/post/domain/models/option_model.dart';
+import 'package:prone/feature/post/domain/models/poll/option_model.dart';
 import 'package:prone/feature/post/domain/models/post_model.dart';
 
 class PollModel extends PostModel {

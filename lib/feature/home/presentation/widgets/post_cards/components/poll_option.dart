@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prone/core/extensions/color_extension.dart';
-import 'package:prone/feature/post/domain/models/option_model.dart';
+import 'package:prone/feature/post/domain/models/poll/option_model.dart';
 
 class PollOption extends StatelessWidget {
   final OptionModel option;

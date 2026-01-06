@@ -1,16 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/domain/models/quiz_model.dart';
+import 'package:prone/feature/post/domain/models/quiz/quiz_model.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/components/post_header.dart';
 import 'package:prone/feature/home/presentation/widgets/post_cards/components/post_content.dart';
 
 class QuizCard extends StatelessWidget {
   final QuizModel quiz;
-  const QuizCard({super.key, required this.quiz});
+  final VoidCallback? onQuizStart;
+  const QuizCard({super.key, required this.quiz, this.onQuizStart});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    if (quiz.userCompleted) {
+      return _buildQuizResultCard(context, theme);
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header - User info ve zaman
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: PostHeader(post: quiz),
+          ),
+
+          // Content - Title ve description
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: PostContent(post: quiz),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Quiz Visual Section - Ana quiz alanı
+          _buildQuizVisual(context, theme),
+
+          const SizedBox(height: 16),
+
+          // Quiz Info Strip
+          // _buildQuizInfoStrip(context, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizResultCard(BuildContext context, ThemeData theme) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
@@ -183,6 +223,7 @@ class QuizCard extends StatelessWidget {
 
   Widget _buildQuizInfoStrip(BuildContext context, ThemeData theme) {
     if (quiz.questions.isEmpty) return const SizedBox.shrink();
+    if (!quiz.userCompleted) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
@@ -198,7 +239,7 @@ class QuizCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'İlk soru: "${quiz.questions.first.questionText}"',
+              'Quiz Sonucunuz: "${quiz.completion?.quizResult.title}"',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -207,43 +248,59 @@ class QuizCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (quiz.userCompleted) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.check_circle, size: 12, color: Colors.green),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Tamamlandı',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, size: 12, color: Colors.green),
+                const SizedBox(width: 4),
+                Text(
+                  'Tamamlandı',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   void _startQuiz(BuildContext context) {
-    print('Quiz başlatılıyor: ${quiz.id}');
-    // context.push('/quiz/${quiz.id}');
+    if (onQuizStart != null) {
+      onQuizStart!();
+    }
   }
 
   void _showQuizResults(BuildContext context) {
     print('Quiz sonuçları gösteriliyor: ${quiz.id}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Quiz Sonuçları'),
+          content: Text(
+            'Quiz Sonucunuz: "${quiz.completion?.quizResult.title}"',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Kapat'),
+            ),
+          ],
+        );
+      },
+    );
     // context.push('/quiz/${quiz.id}/results');
   }
 }

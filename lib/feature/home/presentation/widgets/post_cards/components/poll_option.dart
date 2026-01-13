@@ -4,16 +4,15 @@ import 'package:prone/feature/post/domain/models/poll/option_model.dart';
 
 class PollOption extends StatelessWidget {
   final OptionModel option;
-  // final PollModel poll;
   final bool userVoted;
-  final String? userVoteOptionId;
+  final List<String>? userVotedOptionIds;
   final bool showResult;
 
   const PollOption({
     super.key,
     required this.option,
     required this.userVoted,
-    required this.userVoteOptionId,
+    required this.userVotedOptionIds,
     this.showResult = false,
   });
 
@@ -27,7 +26,8 @@ class PollOption extends StatelessWidget {
   }
 
   Widget _buildResultOption(BuildContext context) {
-    final bool isSelectedOption = userVoteOptionId == option.id;
+    final bool isSelectedOption =
+        userVotedOptionIds?.contains(option.id) ?? false;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),

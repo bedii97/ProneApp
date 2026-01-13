@@ -24,7 +24,7 @@ class PollOptionTile extends StatelessWidget {
     // Görseldeki gibi seçiliyse Primary (Mavi), değilse soluk border
     final borderColor = isUserVoted
         ? colorScheme.primary
-        : colorScheme.outline.withOpacity(0.3);
+        : colorScheme.outline.withValues(alpha: 0.3);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -60,7 +60,9 @@ class PollOptionTile extends StatelessWidget {
                 Text(
                   '%${option.percentage.toStringAsFixed(0)}',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(
+                      alpha: 0.7,
+                    ),
                   ),
                 ),
               ],

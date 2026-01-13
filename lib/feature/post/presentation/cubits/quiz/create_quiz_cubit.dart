@@ -3,10 +3,10 @@ import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
 
 // Helpers
-import 'helpers/helpers.dart';
+import '../../helpers/helpers.dart';
 
 // Mixins
-import 'mixins/mixins.dart';
+import '../../mixins/mixins.dart';
 
 // State
 import 'create_quiz_state.dart';

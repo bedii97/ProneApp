@@ -117,7 +117,6 @@ class HomeCubit extends Cubit<HomeState> {
       );
     } catch (error) {
       emit(currentState.copyWith(isLoadingMore: false));
-      // TODO: Show snackbar or toast for load more error
     }
   }
 

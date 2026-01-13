@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/data/supabase_post_repo.dart';
 import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
-import 'package:prone/feature/post/presentation/screens/quiz_detail_screen/cubits/quiz_detail_cubit.dart';
-import 'package:prone/feature/post/presentation/screens/quiz_detail_screen/cubits/quiz_detail_state.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/quiz_detail_cubit.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/quiz_detail_state.dart';
 // Result Screen importunu buraya ekle
 
 class QuizDetailScreen extends StatefulWidget {
@@ -48,7 +48,15 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
             // ÖNEMLİ: Sonuç ekranına yönlendirme
             // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ResultScreen(result: state.result!)));
             print("Kazanılan Sonuç: ${state.result!.title}");
-            Navigator.pop(context); // Şimdilik sadece kapatıyor
+            showAboutDialog(
+              context: context,
+              children: [
+                Text(
+                  "Tebrikler! Quiz tamamlandı.\nSonuç: ${state.result!.title}",
+                ),
+              ],
+            );
+            // Navigator.pop(context); // Şimdilik sadece kapatıyor
           }
         },
         builder: (context, state) {
@@ -89,70 +97,72 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                 ),
               ),
             ),
-            body: Column(
-              children: [
-                // Soru Sayacı
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      "Soru ${state.currentIndex + 1}/${state.quiz!.questions.length}",
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Sorular (PageView)
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: state.quiz!.questions.length,
-                    itemBuilder: (context, index) {
-                      final question = state.quiz!.questions[index];
-                      return _buildQuestionCard(context, question, state);
-                    },
-                  ),
-                ),
-
-                // Buton (Sonraki Soru veya Bitir)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed:
-                          (state.isCurrentQuestionAnswered &&
-                              state.status != QuizStatus.submitting)
-                          ? () => context.read<QuizCubit>().nextOrSubmit()
-                          : null,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Soru Sayacı
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Soru ${state.currentIndex + 1}/${state.quiz!.questions.length}",
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      child: state.status == QuizStatus.submitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              state.isLastQuestion
-                                  ? "Bitir ve Sonucu Gör"
-                                  : "Sonraki Soru",
-                            ),
                     ),
                   ),
-                ),
-              ],
+
+                  // Sorular (PageView)
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: state.quiz!.questions.length,
+                      itemBuilder: (context, index) {
+                        final question = state.quiz!.questions[index];
+                        return _buildQuestionCard(context, question, state);
+                      },
+                    ),
+                  ),
+
+                  // Buton (Sonraki Soru veya Bitir)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed:
+                            (state.isCurrentQuestionAnswered &&
+                                state.status != QuizStatus.submitting)
+                            ? () => context.read<QuizCubit>().nextOrSubmit()
+                            : null,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: state.status == QuizStatus.submitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                state.isLastQuestion
+                                    ? "Bitir ve Sonucu Gör"
+                                    : "Sonraki Soru",
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -223,7 +233,9 @@ class _OptionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primary.withOpacity(0.1) // Seçili ise hafif renk
+              ? colorScheme.primary.withValues(
+                  alpha: 0.1,
+                ) // Seçili ise hafif renk
               : Colors.transparent,
           border: Border.all(
             color: isSelected ? colorScheme.primary : colorScheme.outline,

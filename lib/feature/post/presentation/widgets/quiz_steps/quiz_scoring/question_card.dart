@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:prone/feature/post/domain/models/quiz/quiz_question_model.dart';
-import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_scoring/option_scoring.dart';
 
 class QuestionCard extends StatelessWidget {

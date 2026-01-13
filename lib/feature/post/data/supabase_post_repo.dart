@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:prone/core/constants/supabase_constants.dart';
@@ -166,10 +165,9 @@ class SupabasePostRepo extends PostRepo {
       }
 
       final List<dynamic> data = response.data;
-      inspect(data.toString());
 
       final deneme = data.map((e) => PostModel.fromJson(e)).toList();
-      inspect(deneme);
+      inspect(response.data);
       return deneme;
     } catch (e, stackTrace) {
       log(
@@ -184,42 +182,24 @@ class SupabasePostRepo extends PostRepo {
   @override
   Future<PollModel> getPollById(String pollId) async {
     try {
-      final currentUserId = _getCurrentUser()?.id;
+      // Edge Function'ı çağırıyoruz
+      final response = await _supabase.functions.invoke(
+        'fetch-post-details', // Edge function isminiz
+        body: {'postId': pollId},
+      );
 
-      // Ana poll datasını çek
-      final response = await _supabase
-          .from(SupabaseConstants.POSTS_TABLE)
-          .select('''
-          *,
-          users!posts_user_id_fkey (
-            username,
-            avatar_url
-          ),
-          poll_options (
-            id,
-            option_text,
-            user_votes!user_votes_option_id_fkey (
-              count
-            )
-          )
-        ''')
-          .eq('id', pollId)
-          .single();
-
-      // Current user'ın vote'unu ayrı query ile çek
-      List<Map<String, dynamic>> userVotes = [];
-      if (currentUserId != null) {
-        userVotes = await _supabase
-            .from(SupabaseConstants.VOTES_TABLE)
-            .select('option_id')
-            .eq('post_id', pollId)
-            .eq('user_id', currentUserId);
+      if (response.status != 200) {
+        throw Exception('Failed to fetch poll details: ${response.data}');
       }
 
-      response['user_votes'] = userVotes;
-      inspect(jsonEncode(response));
-      log('Fetched poll data: $response');
-      return PollModel.fromJson(response);
+      final data = response.data;
+
+      // Debug için
+      inspect(data);
+
+      // Gelen JSON, anasayfadan gelen yapı ile birebir aynı olduğu için
+      // mevcut PollModel.fromJson yapınız muhtemelen hatasız çalışacaktır.
+      return PollModel.fromJson(data);
     } catch (e, stackTrace) {
       log('Error fetching poll', error: e, stackTrace: stackTrace);
       throw Exception('Failed to fetch poll: $e');

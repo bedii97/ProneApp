@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/domain/models/quiz/quiz_scoring_model.dart';
-import '../create_quiz_state.dart';
+import '../cubits/quiz/create_quiz_state.dart';
 
 mixin ScoringManagementMixin on Cubit<CreateQuizState> {
   /// Belirli bir seçenek için puanlamayı günceller
@@ -177,13 +177,11 @@ mixin ScoringManagementMixin on Cubit<CreateQuizState> {
 
   /// Belirli bir seçenek için puanlamayı getirir
   QuizScoringModel? getScoringForOption(String questionId, String optionId) {
-    try {
-      return state.scoring.firstWhere(
-        (s) => s.questionId == questionId && s.optionId == optionId,
-      );
-    } catch (e) {
-      return null;
-    }
+    final matches = state.scoring.where(
+      (s) => s.questionId == questionId && s.optionId == optionId,
+    );
+
+    return matches.isNotEmpty ? matches.first : null;
   }
 
   /// Belirli bir seçenek ve sonuç için puanı getirir

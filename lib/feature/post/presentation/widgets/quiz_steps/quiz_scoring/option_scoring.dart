@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_scoring/helpers/quiz_scoring_helpers.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_scoring/result_scoring.dart';
 

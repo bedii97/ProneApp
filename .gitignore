@@ -47,3 +47,4 @@ app.*.map.json
 *.env
 keep-develop.md
 output.json
+GEMINI.md

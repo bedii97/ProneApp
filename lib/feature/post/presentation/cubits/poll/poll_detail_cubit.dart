@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
 import 'package:prone/feature/post/domain/repos/post_repo.dart';
-import 'package:prone/feature/post/presentation/cubits/poll_detail_state.dart';
+import 'package:prone/feature/post/presentation/cubits/poll/poll_detail_state.dart';
 
 class PollDetailCubit extends Cubit<PollDetailState> {
   final PostRepo _postRepo;
@@ -43,11 +43,17 @@ class PollDetailCubit extends Cubit<PollDetailState> {
       return option.copyWith(percentage: percentage);
     }).toList();
 
+    // Create new userVotedOptionIds list with the new vote
+    List<String> newVotedOptionIds = currentPoll.userVotedOptionIds ?? [];
+    if (!(currentPoll.userVotedOptionIds?.contains(selectedOptionId) ??
+        false)) {
+      newVotedOptionIds.add(selectedOptionId);
+    }
     return currentPoll.copyWith(
       options: optionsWithPercentages,
       totalVotes: newTotalVotes,
       userVoted: true,
-      userVoteOptionId: selectedOptionId,
+      userVotedOptionIds: newVotedOptionIds,
     );
   }
 

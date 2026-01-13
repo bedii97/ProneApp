@@ -23,7 +23,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   ];
 
   bool _allowMultipleVotes = false;
-  bool _showResultsAfterVote = true;
+  bool _showResultsBeforeVote = true;
 
   @override
   void dispose() {
@@ -72,7 +72,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         type: PostType.poll,
         options: options.map((text) => CreateOptionModel(text: text)).toList(),
         allowMultipleAnswers: _allowMultipleVotes,
-        showResultsBeforeVoting: _showResultsAfterVote,
+        showResultsBeforeVoting: _showResultsBeforeVote,
         allowAddingOptions: false, // UI'da henüz yok
       );
 
@@ -206,14 +206,14 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       SwitchListTile(
                         title: const Text('Sonuçları göster'),
                         subtitle: Text(
-                          _showResultsAfterVote
-                              ? 'Kullanıcılar oy verdikten sonra sonuçları görebilir'
-                              : 'Sonuçlar gizli kalır',
+                          _showResultsBeforeVote
+                              ? 'Kullanıcılar oy vermeden önce sonuçları görebilir'
+                              : 'Sonuçlar oy verdikten sonra gösterilir',
                         ),
-                        value: _showResultsAfterVote,
+                        value: _showResultsBeforeVote,
                         onChanged: (value) {
                           setState(() {
-                            _showResultsAfterVote = value;
+                            _showResultsBeforeVote = value;
                           });
                         },
                       ),

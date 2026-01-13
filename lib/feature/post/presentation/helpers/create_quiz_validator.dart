@@ -1,7 +1,5 @@
-import 'dart:developer';
-
 import 'package:prone/core/utils/quiz_validator.dart';
-import '../create_quiz_state.dart';
+import '../cubits/quiz/create_quiz_state.dart';
 
 class ValidationResult {
   final bool isValid;
@@ -196,22 +194,12 @@ class CreateQuizValidator {
         final optionId = 'option_${questionIndex}_$optionIndex';
 
         // Bu seçenek için scoring var mı?
-        final scoring = state.scoring.firstWhere(
+        final hasScoring = state.scoring.any(
           (s) => s.questionId == question.id && s.optionId == optionId,
-          orElse: () => throw StateError('Scoring not found'),
         );
-
-        // Her result için puan verilmiş mi?
-        //Todo: 0 puan verilmiş seçeneklere izin vermiyor, QuizScoringModel de de map değiştirilmeli
-        for (final result in state.results) {
-          log(result.title);
-          log(result.id);
-          log((!scoring.resultPoints.containsKey(result.id)).toString());
-          if (!scoring.resultPoints.containsKey(result.id)) {
-            errors['scoring_incomplete'] =
-                'Tüm seçenekler için puanlama tamamlanmalıdır';
-            return ValidationResult.error(errors);
-          }
+        if (!hasScoring) {
+          errors['scoring_${questionIndex}_$optionIndex'] =
+              '${questionIndex + 1}. soru, "$optionText" seçeneği için puanlama eksik';
         }
       }
     }

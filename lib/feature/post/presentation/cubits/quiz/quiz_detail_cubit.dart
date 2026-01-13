@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/data/supabase_post_repo.dart';
-import 'package:prone/feature/post/presentation/screens/quiz_detail_screen/cubits/quiz_detail_state.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/quiz_detail_state.dart';
 
 class QuizCubit extends Cubit<QuizState> {
   final SupabasePostRepo _quizRepository;
@@ -55,7 +55,6 @@ class QuizCubit extends Cubit<QuizState> {
         quizId: state.quiz!.id!,
         answers: state.answers,
       );
-
       emit(state.copyWith(status: QuizStatus.completed, result: result));
     } catch (e) {
       emit(

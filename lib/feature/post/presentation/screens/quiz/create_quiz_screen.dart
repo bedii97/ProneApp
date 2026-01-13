@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prone/feature/post/data/supabase_post_repo.dart';
-import 'package:prone/feature/post/presentation/cubits/create_quiz_cubit.dart';
-import 'package:prone/feature/post/presentation/cubits/create_quiz_state.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/create_quiz_cubit.dart';
+import 'package:prone/feature/post/presentation/cubits/quiz/create_quiz_state.dart';
 import 'package:prone/feature/post/presentation/widgets/quiz_steps/quiz_steps.dart';
 
 class CreateQuizScreen extends StatelessWidget {

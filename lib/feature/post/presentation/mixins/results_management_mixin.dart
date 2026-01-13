@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prone/feature/post/domain/models/quiz/quiz_result_model.dart';
-import '../create_quiz_state.dart';
+import '../cubits/quiz/create_quiz_state.dart';
 
 mixin ResultsManagementMixin on Cubit<CreateQuizState> {
   /// Unique ID generator for results

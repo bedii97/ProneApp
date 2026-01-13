@@ -1,5 +1,5 @@
 import 'package:prone/feature/post/domain/models/quiz/create_quiz_model.dart';
-import '../create_quiz_state.dart';
+import '../cubits/quiz/create_quiz_state.dart';
 
 class CreateQuizModelBuilder {
   /// Ana method - CreateQuizState'ten CreateQuizModel oluşturur

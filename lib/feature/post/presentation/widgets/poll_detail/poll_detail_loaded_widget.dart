@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:prone/core/extensions/timeago_extension.dart';
 import 'package:prone/feature/post/domain/models/poll/option_model.dart';
 import 'package:prone/feature/post/domain/models/poll/poll_model.dart';
-import 'package:prone/feature/post/presentation/screens/poll_detail_screen/widgets/poll_option_tile.dart';
+import 'package:prone/feature/post/presentation/widgets/poll_detail/poll_option_tile.dart';
 
 class PollDetailLoadedWidget extends StatelessWidget {
   final PollModel poll;
@@ -23,6 +23,7 @@ class PollDetailLoadedWidget extends StatelessWidget {
       children: [
         Expanded(
           child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -48,8 +49,8 @@ class PollDetailLoadedWidget extends StatelessWidget {
                     Text(
                       poll.body!, // "Aşağıdaki seçeneklerden..."
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.textTheme.bodyMedium?.color?.withOpacity(
-                          0.8,
+                        color: theme.textTheme.bodyMedium?.color?.withValues(
+                          alpha: 0.8,
                         ),
                         height: 1.5,
                       ),
@@ -67,12 +68,16 @@ class PollDetailLoadedWidget extends StatelessWidget {
                   ...poll.options.asMap().entries.map((entry) {
                     final index = entry.key;
                     final option = entry.value;
+                    final userVoted = poll.userVotedOptionIds?.contains(
+                      option.id,
+                    );
+
                     return _buildPollOption(
                       context,
                       option,
                       index,
                       poll,
-                      poll.userVoteOptionId == option.id,
+                      userVoted ?? false,
                     );
                   }),
 
@@ -82,8 +87,8 @@ class PollDetailLoadedWidget extends StatelessWidget {
                   Text(
                     'Toplam ${NumberFormat('#,###').format(poll.totalVotes)} oy',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
-                        0.6,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.6,
                       ),
                     ),
                   ),
@@ -127,7 +132,7 @@ class PollDetailLoadedWidget extends StatelessWidget {
             Text(
               poll.createdAt.timeAgo(context),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -164,7 +169,7 @@ class PollDetailLoadedWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -192,7 +197,7 @@ class PollDetailLoadedWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor, // veya surface color
         border: Border(
-          top: BorderSide(color: theme.dividerColor.withOpacity(0.5)),
+          top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
         ),
       ),
       child: Row(
